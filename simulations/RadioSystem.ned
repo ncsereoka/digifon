@@ -8,8 +8,8 @@ network RadioSystem
 {
     parameters:
         int userCount = default(3);
-        int connectionLostMoment = default(4);
-        int connectionFoundMoment = default(6);
+        int connectionLostSec = default(4);
+        int connectionFoundSec = default(8);
         int lag = default(5);
         @display("i=device/antennatower");
     submodules:

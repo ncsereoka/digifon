@@ -16,7 +16,7 @@ module User
             @display("p=100,150");
         }
     connections:
-        generator.out --> queue.in;
         in --> queue.in;
+        generator.out --> queue.in;
         queue.out --> out;
 }

@@ -5,10 +5,15 @@
 
 using namespace omnetpp;
 
+namespace digifon {
+
 class User: public cModule {
 protected:
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
 };
+
+}
+;
 
 #endif

@@ -2,11 +2,13 @@
 /work/
 
 /src/Makefile
+/Makefile
+/digifon
 
 /simulations/results*
 /simulations/Makefile
-/simulations/nesting
-/simulations/nesting_dbg
+/simulations/digifon
+/simulations/digifon_dbg
 /simulations/*/results*
 /simulations/*/*results*
 

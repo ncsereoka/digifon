@@ -19,10 +19,14 @@ network RadioSystem
         }
         user[userCount]: User {
             parameters:
-                @display("p=150,50");
+                @display("p=200,50,c,100");
         }
         sink: Sink {
         	parameters:
-        	    @display("p=250,50");
+        	    @display("p=350,50");
         }
+	connections allowunconnected:
+	    for i=0..userCount-1 {
+            user[i].out --> sink.in++;
+	    }
 }

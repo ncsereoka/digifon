@@ -38,7 +38,7 @@ void Generator::handleMessage(cMessage *msg) {
     cMessage *job = new cMessage("job");
     send(job, "out");
 
-    scheduleAt(simTime() + par("sendIaTime").longValue(), sendMessageEvent);
+    scheduleAt(simTime() + par("sendIaTime"), sendMessageEvent);
 }
 
 }

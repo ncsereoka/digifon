@@ -12,6 +12,7 @@ simple Queue
         @statistic[busy](title="server busy state";record=vector?,timeavg;interpolationmode=sample-hold);
         @statistic[queueingTime](title="queueing time at dequeue";unit=s;record=vector,mean,max;interpolationmode=none);
     gates:
-        input in;
+        input control_in;
+        input data_in;
         output out;
 }

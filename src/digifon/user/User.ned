@@ -3,7 +3,6 @@ package digifon.user;
 module User
 {
     parameters:
-        int id;
         @display("i=block/user;bgb=194,200");
     gates:
         input in;
@@ -16,7 +15,7 @@ module User
             @display("p=100,150");
         }
     connections:
-        in --> queue.in;
-        generator.out --> queue.in;
+        generator.out --> queue.data_in;
+        in --> queue.control_in;
         queue.out --> out;
 }

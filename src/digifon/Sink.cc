@@ -21,7 +21,8 @@ void Sink::initialize() {
 
 void Sink::handleMessage(cMessage *msg) {
     simtime_t lifetime = simTime() - msg->getCreationTime();
-    EV << "Received " << msg->getName() << ", lifetime: " << lifetime << "s" << '\n';
+    EV << "[SINK] Received " << msg->getName()
+            << ", lifetime: "<< lifetime.inUnit(SimTimeUnit::SIMTIME_MS) << "ms\n";
     emit(lifetimeSignal, lifetime);
     delete msg;
 }

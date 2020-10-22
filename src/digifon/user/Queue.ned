@@ -3,7 +3,7 @@ package digifon.user;
 simple Queue
 {
     parameters:
-        volatile double serviceTime @unit(s);
+        volatile double serviceTime @unit(ms);
         @display("i=block/queue;q=queue");
         @signal[qlen](type="long");
         @signal[busy](type="bool");

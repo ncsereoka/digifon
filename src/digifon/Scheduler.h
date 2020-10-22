@@ -8,6 +8,14 @@ using namespace omnetpp;
 namespace digifon {
 
 class Scheduler: public cSimpleModule {
+private:
+    cMessage *sendControlMessageEvent;
+    cMessage *generateSchedulerMessage(int allocatedChannels);
+
+public:
+    Scheduler();
+    virtual ~Scheduler();
+
 protected:
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);

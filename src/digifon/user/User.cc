@@ -9,7 +9,10 @@ void User::initialize() {
 }
 
 void User::handleMessage(cMessage *msg) {
-    // TODO - Generated method body
+    if (!strcmp(msg->getName(), "controlMessage")) {
+        EV << "[USER#" << this->getIndex() << "] Received controlMessage\n";
+        delete msg;
+    }
 }
 
 }

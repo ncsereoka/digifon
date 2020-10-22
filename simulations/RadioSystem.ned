@@ -8,8 +8,8 @@ network RadioSystem
 {
     parameters:
         int userCount = default(3);
-        int connectionLostSec = default(4);
-        int connectionFoundSec = default(8);
+        volatile double connectionLostSec @unit(s);
+        volatile double connectionFoundSec @unit(s);
         int lag = default(5);
         @display("i=device/antennatower");
     submodules:
@@ -17,7 +17,7 @@ network RadioSystem
             parameters:
                 @display("p=50,50");
         }
-        user[userCount]: User {
+        users[userCount]: User {
             parameters:
                 @display("p=200,50,c,100");
         }
@@ -27,6 +27,7 @@ network RadioSystem
         }
 	connections allowunconnected:
 	    for i=0..userCount-1 {
-            user[i].out --> sink.in++;
+	        scheduler.out++ --> users[i].in;
+            users[i].out --> sink.in++;
 	    }
 }

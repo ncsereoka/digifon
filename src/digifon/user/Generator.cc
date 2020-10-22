@@ -35,10 +35,10 @@ void Generator::initialize() {
 void Generator::handleMessage(cMessage *msg) {
     ASSERT(msg == sendMessageEvent);
 
-    cMessage *job = new cMessage("job");
-    send(job, "out");
+    cMessage *newData = new cMessage("data");
+    send(newData, "out");
 
-    scheduleAt(simTime() + par("sendIaTime"), sendMessageEvent);
+    scheduleAt(simTime() + par("messageCreationInterval"), sendMessageEvent);
 }
 
 }

@@ -1,14 +1,31 @@
-#ifndef __QUEUE_H_
-#define __QUEUE_H_
+#ifndef __DIGIFONQUEUE_H
+#define __DIGIFONQUEUE_H
 
-#include "AbstractQueue.h"
+#include <omnetpp.h>
+
+using namespace omnetpp;
 
 namespace digifon {
 
-class Queue: public AbstractQueue {
+class Queue: public cSimpleModule {
 protected:
-    virtual simtime_t startService(cMessage *msg) override;
-    virtual void endService(cMessage *msg) override;
+    cMessage *messageUnderService;
+    cMessage *endServiceMessage;
+    cQueue queue;
+    simsignal_t queueLengthSignal;
+    simsignal_t busySignal;
+    simsignal_t queueingTimeSignal;
+
+public:
+    Queue();
+    ~Queue();
+
+protected:
+    virtual void initialize();
+    virtual void handleMessage(cMessage *msg);
+    virtual void arrival(cMessage *msg);
+    virtual simtime_t startService(cMessage *msg);
+    virtual void endService(cMessage *msg);
 };
 
 }

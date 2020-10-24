@@ -5,10 +5,10 @@ simple Queue
     parameters:
         volatile double serviceTime @unit(ms);
         @display("i=block/queue;q=queue");
-        @signal[qlen](type="long");
+        @signal[queueLength](type="long");
         @signal[busy](type="bool");
         @signal[queueingTime](type="simtime_t");
-        @statistic[qlen](title="queue length";record=vector,timeavg,max;interpolationmode=sample-hold);
+        @statistic[queueLength](title="queue length";record=vector,timeavg,max;interpolationmode=sample-hold);
         @statistic[busy](title="server busy state";record=vector?,timeavg;interpolationmode=sample-hold);
         @statistic[queueingTime](title="queueing time at dequeue";unit=s;record=vector,mean,max;interpolationmode=none);
     gates:

@@ -1,21 +1,8 @@
-#include <omnetpp.h>
+#include "Generator.h"
 
 using namespace omnetpp;
 
 namespace digifon {
-
-class Generator: public cSimpleModule {
-private:
-    cMessage *sendMessageEvent;
-
-public:
-    Generator();
-    virtual ~Generator();
-
-protected:
-    virtual void initialize() override;
-    virtual void handleMessage(cMessage *msg) override;
-};
 
 Define_Module(Generator);
 

@@ -1,19 +1,13 @@
-#include "User.h"
+#include <omnetpp.h>
+
+using namespace omnetpp;
 
 namespace digifon {
 
+class User: public cModule {
+};
+
 Define_Module(User);
-
-void User::initialize() {
-    // TODO - Generated method body
-}
-
-void User::handleMessage(cMessage *msg) {
-    if (!strcmp(msg->getName(), "controlMessage")) {
-        EV << "[USER#" << this->getIndex() << "] Received controlMessage\n";
-        delete msg;
-    }
-}
 
 }
 ;

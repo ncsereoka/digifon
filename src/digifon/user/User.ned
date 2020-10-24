@@ -3,7 +3,7 @@ package digifon.user;
 module User
 {
     parameters:
-        @display("i=block/user;bgb=194,200");
+        @display("i=block/user;bgb=200,200");
     gates:
         input in;
         output out;

@@ -10,7 +10,7 @@ namespace digifon {
 class Scheduler: public cSimpleModule {
 private:
     cMessage *sendControlMessageEvent;
-    cMessage *generateSchedulerMessage(int allocatedChannels);
+    int *allocatedChannels;
 
 public:
     Scheduler();
@@ -19,6 +19,9 @@ public:
 protected:
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
+
+private:
+    cMessage* generateSchedulerMessage(int allocatedChannels);
 };
 
 }

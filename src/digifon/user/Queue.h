@@ -9,7 +9,7 @@ namespace digifon {
 
 class Queue: public cSimpleModule {
 protected:
-    cMessage *messageUnderService;
+    cMessage *messageBeingServiced;
     cMessage *endServiceMessage;
     cQueue queue;
     simsignal_t queueLengthSignal;

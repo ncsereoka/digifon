@@ -6,12 +6,12 @@ namespace digifon {
 Define_Module(Queue);
 
 Queue::Queue() {
-    messageUnderService = nullptr;
+    messageBeingServiced = nullptr;
     endServiceMessage = nullptr;
 }
 
 Queue::~Queue() {
-    delete messageUnderService;
+    delete messageBeingServiced;
     cancelAndDelete(endServiceMessage);
 }
 
@@ -31,11 +31,11 @@ void Queue::handleMessage(cMessage *msg) {
         handleControlMessage(msg);
     } else if (msg == endServiceMessage) {
         handleEndServiceMessage();
-    } else if (!messageUnderService) {
+    } else if (!messageBeingServiced) {
         arrival(msg);
-        messageUnderService = msg;
+        messageBeingServiced = msg;
         emit(queueingTimeSignal, SIMTIME_ZERO);
-        simtime_t serviceTime = startService(messageUnderService);
+        simtime_t serviceTime = startService(messageBeingServiced);
         scheduleAt(simTime() + serviceTime, endServiceMessage);
         emit(busySignal, true);
     } else {
@@ -43,6 +43,30 @@ void Queue::handleMessage(cMessage *msg) {
         queue.insert(msg);
         msg->setTimestamp();
         emit(queueLengthSignal, queue.getLength());
+    }
+}
+
+void Queue::handleControlMessage(cMessage *controlMessage) {
+    int allocatedChannels =
+            ((SchedulerMessage*) controlMessage)->getAllocatedChannels();
+    EV << "[QUEUE#" << this->getParentModule()->getIndex()
+              << "] Received control message from scheduler: "
+              << allocatedChannels << '\n';
+    delete controlMessage;
+}
+
+void Queue::handleEndServiceMessage() {
+    endService(messageBeingServiced);
+    if (queue.isEmpty()) {
+        messageBeingServiced = nullptr;
+        emit(busySignal, false);
+    } else {
+        messageBeingServiced = (cMessage*) queue.pop();
+        emit(queueLengthSignal, queue.getLength());
+        emit(queueingTimeSignal,
+                simTime() - messageBeingServiced->getTimestamp());
+        simtime_t serviceTime = startService(messageBeingServiced);
+        scheduleAt(simTime() + serviceTime, endServiceMessage);
     }
 }
 
@@ -61,29 +85,6 @@ void Queue::endService(cMessage *msg) {
     EV << "[QUEUE#" << this->getParentModule()->getIndex()
               << "] Completed service of " << msg->getName() << '\n';
     send(msg, "out");
-}
-
-void Queue::handleControlMessage(cMessage *controlMessage) {
-    int allocatedChannels = ((SchedulerMessage *) controlMessage)->getAllocatedChannels();
-    EV << "[QUEUE#" << this->getParentModule()->getIndex()
-              << "] Received control message from scheduler: "
-              << allocatedChannels << '\n';
-    delete controlMessage;
-}
-
-void Queue::handleEndServiceMessage() {
-    endService(messageUnderService);
-    if (queue.isEmpty()) {
-        messageUnderService = nullptr;
-        emit(busySignal, false);
-    } else {
-        messageUnderService = (cMessage*) queue.pop();
-        emit(queueLengthSignal, queue.getLength());
-        emit(queueingTimeSignal,
-                simTime() - messageUnderService->getTimestamp());
-        simtime_t serviceTime = startService(messageUnderService);
-        scheduleAt(simTime() + serviceTime, endServiceMessage);
-    }
 }
 
 }

@@ -26,6 +26,10 @@ protected:
     virtual void arrival(cMessage *msg);
     virtual simtime_t startService(cMessage *msg);
     virtual void endService(cMessage *msg);
+
+private:
+    virtual void handleControlMessage(cMessage *controlMessage);
+    virtual void handleEndServiceMessage();
 };
 
 }

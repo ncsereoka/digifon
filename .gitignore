@@ -4,6 +4,7 @@
 /src/Makefile
 /Makefile
 /digifon
+/digifon_dbg
 
 /simulations/results*
 /simulations/Makefile

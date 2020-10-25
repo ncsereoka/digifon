@@ -1,4 +1,5 @@
 #include "Queue.h"
+#include "../Scheduler_Message_m.h"
 
 namespace digifon {
 
@@ -26,19 +27,10 @@ void Queue::initialize() {
 }
 
 void Queue::handleMessage(cMessage *msg) {
-    if (msg == endServiceMessage) {
-        endService(messageUnderService);
-        if (queue.isEmpty()) {
-            messageUnderService = nullptr;
-            emit(busySignal, false);
-        } else {
-            messageUnderService = (cMessage*) queue.pop();
-            emit(queueLengthSignal, queue.getLength());
-            emit(queueingTimeSignal,
-                    simTime() - messageUnderService->getTimestamp());
-            simtime_t serviceTime = startService(messageUnderService);
-            scheduleAt(simTime() + serviceTime, endServiceMessage);
-        }
+    if (!strcmp(msg->getName(), "controlMessage")) {
+        handleControlMessage(msg);
+    } else if (msg == endServiceMessage) {
+        handleEndServiceMessage();
     } else if (!messageUnderService) {
         arrival(msg);
         messageUnderService = msg;
@@ -56,7 +48,7 @@ void Queue::handleMessage(cMessage *msg) {
 
 void Queue::arrival(cMessage *msg) {
     EV << "[QUEUE#" << this->getParentModule()->getIndex()
-              << "] Message arrived: " << msg->getName();
+              << "] Message arrived: " << msg->getName() << '\n';
 }
 
 simtime_t Queue::startService(cMessage *msg) {
@@ -69,6 +61,29 @@ void Queue::endService(cMessage *msg) {
     EV << "[QUEUE#" << this->getParentModule()->getIndex()
               << "] Completed service of " << msg->getName() << '\n';
     send(msg, "out");
+}
+
+void Queue::handleControlMessage(cMessage *controlMessage) {
+    int allocatedChannels = ((SchedulerMessage *) controlMessage)->getAllocatedChannels();
+    EV << "[QUEUE#" << this->getParentModule()->getIndex()
+              << "] Received control message from scheduler: "
+              << allocatedChannels << '\n';
+    delete controlMessage;
+}
+
+void Queue::handleEndServiceMessage() {
+    endService(messageUnderService);
+    if (queue.isEmpty()) {
+        messageUnderService = nullptr;
+        emit(busySignal, false);
+    } else {
+        messageUnderService = (cMessage*) queue.pop();
+        emit(queueLengthSignal, queue.getLength());
+        emit(queueingTimeSignal,
+                simTime() - messageUnderService->getTimestamp());
+        simtime_t serviceTime = startService(messageUnderService);
+        scheduleAt(simTime() + serviceTime, endServiceMessage);
+    }
 }
 
 }

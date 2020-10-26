@@ -73,7 +73,7 @@ void Scheduler::handleMessage(cMessage *msg) {
 
 cMessage* Scheduler::generateSchedulerMessage(int allocatedChannels) {
     SchedulerMessage *schedulerMessage = new SchedulerMessage("controlMessage");
-    schedulerMessage->setAllocatedChannels(4);
+    schedulerMessage->setAllocatedChannels(allocatedChannels);
     return schedulerMessage;
 }
 

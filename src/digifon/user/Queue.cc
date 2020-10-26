@@ -27,7 +27,7 @@ void Queue::handleControlMessage(cMessage *controlMessage) {
     int allocatedChannels =
             ((SchedulerMessage*) controlMessage)->getAllocatedChannels();
     EV << "[QUEUE#" << this->getParentModule()->getIndex() << "] Received "
-              << allocatedChannels << "allocated channel(s) from scheduler\n";
+              << allocatedChannels << " allocated channel(s) from scheduler\n";
     delete controlMessage;
 
     while (!queue.isEmpty() && allocatedChannels > 0) {

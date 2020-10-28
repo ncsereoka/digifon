@@ -1,6 +1,6 @@
 # Radio system with location dependent errors
 
-In addition to the previous problem (of LTE scheduling), we model the situation when a user has a very bad radio channel for a certain time period.
+[**!!! Source !!!**](http://staff.cs.upt.ro/~todinca/cad/Error_sched.html)
 
 Consider a radio system consisting of K users (e.g. K=3) which transfer data.
 
@@ -22,7 +22,7 @@ Try to adjust the weight of the user affected by errors (respectively its transf
 
 Implement the simulation model using a non-adaptive scheduling algorithm (e.g. Weighted Round Robin).
 
-## For the exam
+## Extended requirements
 
 1. Adapt the scheduling algorithm in order to allow the lagging user to reduce its lag. For example, you can increase its weight in the WRR algorithm.
 2. Compare the performance of the scheduling algorithm without adaptaion with the performance of the scheduling algorithm with.

@@ -22,6 +22,7 @@ protected:
 
 private:
     cMessage* generateSchedulerMessage(int allocatedChannels);
+    bool isConnectionNormal();
 };
 
 }

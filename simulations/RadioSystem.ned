@@ -8,9 +8,6 @@ network RadioSystem
 {
     parameters:
         int userCount = default(3);
-        volatile double connectionLostSec @unit(s);
-        volatile double connectionFoundSec @unit(s);
-        int lag = default(5);
         @display("i=device/antennatower");
     submodules:
         scheduler: Scheduler {

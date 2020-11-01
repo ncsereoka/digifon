@@ -18,44 +18,7 @@ Scheduler::~Scheduler() {
 void Scheduler::initialize() {
     sendControlMessageEvent = new cMessage("SchedulerMessage");
     scheduleAt(simTime(), sendControlMessageEvent);
-
-    int outputGatesCount = this->gateCount();
-    allocatedChannels = new int[outputGatesCount];
-
-    std::vector<int> initialWeights = cStringTokenizer(
-            par("initialWeights").stringValue()).asIntVector();
-    if (initialWeights.size() != outputGatesCount) {
-        throw cRuntimeError("Weights parameter count not equal to gate count.");
-    }
-
-    int weightSum = 0;
-    for (std::vector<int>::iterator it = initialWeights.begin();
-            it != initialWeights.end(); ++it) {
-        weightSum += *it;
-    }
-
-    int newWeightSum = 0;
-    int factor = par("radioChannelCount").intValue() / weightSum;
-    for (int i = 0; i < outputGatesCount; i++) {
-        int newCount = initialWeights.at(i) * factor;
-        if (newCount < 1) {
-            newCount = 1;
-        }
-        allocatedChannels[i] = newCount;
-        newWeightSum += newCount;
-    }
-
-    int diff = newWeightSum - weightSum;
-    if (diff < 0) {
-        allocatedChannels[0] -= diff;
-    } else {
-        for (int i = 0; i < outputGatesCount; i++) {
-            if (allocatedChannels[i] > diff) {
-                allocatedChannels[i] -= diff;
-                break;
-            }
-        }
-    }
+    allocatedChannels = initializeAllocatedChannels();
 }
 
 void Scheduler::handleMessage(cMessage *msg) {
@@ -86,6 +49,48 @@ bool Scheduler::isConnectionNormal() {
     bool beforeConnectionLost = currentTime < par("connectionLostSec");
     bool afterConnectionFound = currentTime > par("connectionFoundSec");
     return beforeConnectionLost || afterConnectionFound;
+}
+
+int* Scheduler::initializeAllocatedChannels() {
+    int outputGatesCount = this->gateCount();
+    int *channels = new int[outputGatesCount];
+
+    std::vector<int> initialWeights = cStringTokenizer(
+            par("initialWeights").stringValue()).asIntVector();
+    if (initialWeights.size() != outputGatesCount) {
+        throw cRuntimeError("Weights parameter count not equal to gate count.");
+    }
+
+    int weightSum = 0;
+    for (std::vector<int>::iterator it = initialWeights.begin();
+            it != initialWeights.end(); ++it) {
+        weightSum += *it;
+    }
+
+    int newWeightSum = 0;
+    int factor = par("radioChannelCount").intValue() / weightSum;
+    for (int i = 0; i < outputGatesCount; i++) {
+        int newCount = initialWeights.at(i) * factor;
+        if (newCount < 1) {
+            newCount = 1;
+        }
+        channels[i] = newCount;
+        newWeightSum += newCount;
+    }
+
+    int diff = newWeightSum - weightSum;
+    if (diff < 0) {
+        channels[0] -= diff;
+    } else {
+        for (int i = 0; i < outputGatesCount; i++) {
+            if (channels[i] > diff) {
+                channels[i] -= diff;
+                break;
+            }
+        }
+    }
+
+    return channels;
 }
 
 }

@@ -24,7 +24,6 @@ protected:
 
 private:
     cMessage* generateSchedulerMessage(int allocatedChannels);
-    bool isConnectionNormal();
     int* initializeAllocatedChannels();
     void handleControlMessageEvent(cMessage *msg);
     void handleConnectionLostEvent(cMessage *msg);

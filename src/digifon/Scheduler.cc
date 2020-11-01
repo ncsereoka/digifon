@@ -25,13 +25,11 @@ void Scheduler::initialize() {
     sendControlMessageEvent = new cMessage("SchedulerMessage");
     scheduleAt(simTime(), sendControlMessageEvent);
 
-    unluckyUserLosesConnectionEvent = new cMessage(
-            "Unlucky user lost connection.");
+    unluckyUserLosesConnectionEvent = new cMessage("ConnectionLostEvent");
     scheduleAt(simTime() + par("connectionLostSec"),
             unluckyUserLosesConnectionEvent);
 
-    unluckyUserFindsConnectionEvent = new cMessage(
-            "Unlucky user found connection.");
+    unluckyUserFindsConnectionEvent = new cMessage("ConnectionFoundEvent");
     scheduleAt(simTime() + par("connectionFoundSec"),
             unluckyUserFindsConnectionEvent);
 }
@@ -54,20 +52,12 @@ cMessage* Scheduler::generateSchedulerMessage(int allocatedChannels) {
     return schedulerMessage;
 }
 
-bool Scheduler::isConnectionNormal() {
-    simtime_t currentTime = simTime();
-    bool beforeConnectionLost = currentTime < par("connectionLostSec");
-    bool afterConnectionFound = currentTime > par("connectionFoundSec");
-    return beforeConnectionLost || afterConnectionFound;
-}
-
 int* Scheduler::initializeAllocatedChannels() {
-    int outputGatesCount = this->gateCount();
-    int *channels = new int[outputGatesCount];
-
+    // Parse the initial weights
     std::vector<int> initialWeights = cStringTokenizer(
             par("initialWeights").stringValue()).asIntVector();
-    if (initialWeights.size() != outputGatesCount) {
+    int userCount = this->gateCount();
+    if (initialWeights.size() != userCount) {
         throw cRuntimeError("Weights parameter count not equal to gate count.");
     }
 
@@ -77,9 +67,11 @@ int* Scheduler::initializeAllocatedChannels() {
         weightSum += *it;
     }
 
+    // Allocate the initial channels
+    int *channels = new int[userCount];
     int newWeightSum = 0;
     int factor = par("radioChannelCount").intValue() / weightSum;
-    for (int i = 0; i < outputGatesCount; i++) {
+    for (int i = 0; i < userCount; i++) {
         int newCount = initialWeights.at(i) * factor;
         if (newCount < 1) {
             newCount = 1;
@@ -88,16 +80,23 @@ int* Scheduler::initializeAllocatedChannels() {
         newWeightSum += newCount;
     }
 
+    // Distribute any remaining channels
     int diff = newWeightSum - weightSum;
     if (diff < 0) {
         channels[0] -= diff;
     } else {
-        for (int i = 0; i < outputGatesCount; i++) {
+        for (int i = 0; i < userCount; i++) {
             if (channels[i] > diff) {
                 channels[i] -= diff;
                 break;
             }
         }
+    }
+
+    // Logging to see the count of allocated channels
+    for (int i = 0; i < userCount; i++) {
+        EV << "Currently allocated channels to USER#" << i << ": "
+                  << channels[i] << '\n';
     }
 
     return channels;
@@ -107,11 +106,7 @@ void Scheduler::handleControlMessageEvent(cMessage *msg) {
     for (cModule::GateIterator i(this); !i.end(); i++) {
         cGate *gate = *i;
         int gateIndex = gate->getIndex();
-        bool normalUser = gateIndex != par("unluckyUserId").intValue();
-
-        if (normalUser || isConnectionNormal()) {
-            send(generateSchedulerMessage(allocatedChannels[gateIndex]), gate);
-        }
+        send(generateSchedulerMessage(allocatedChannels[gateIndex]), gate);
     }
 
     scheduleAt(simTime() + par("schedulingCycleDuration"),
@@ -119,8 +114,34 @@ void Scheduler::handleControlMessageEvent(cMessage *msg) {
 }
 
 void Scheduler::handleConnectionLostEvent(cMessage *msg) {
+    // Save the number of channels previously allocated to the unlucky user
     int unluckyUserId = par("unluckyUserId").intValue();
+    int unluckyUserChannels = allocatedChannels[unluckyUserId];
+    allocatedChannels[unluckyUserId] = 0;
+
+    int userCount = this->gateCount();
+    int luckyUserCount = userCount - 1;
+
+    // Calculate the bonus the others are going to get
+    int bonus = unluckyUserChannels / luckyUserCount;
+    if (bonus == 0) {
+        bonus = 1;
+    }
+
+    // Allocate the bonus to the others
+    for (int i = 0; unluckyUserChannels > 0 && i < userCount; i++) {
+        if (i != unluckyUserId) {
+            allocatedChannels[i] += bonus;
+            unluckyUserChannels -= bonus;
+        }
+    }
+
+    // Logging to see the count of allocated channels
     EV << "USER#" << unluckyUserId << " lost connection!\n";
+    for (int i = 0; i < userCount; i++) {
+        EV << "Currently allocated channels to USER#" << i << ": "
+                  << allocatedChannels[i] << '\n';
+    }
 }
 
 void Scheduler::handleConnectionFoundEvent(cMessage *msg) {

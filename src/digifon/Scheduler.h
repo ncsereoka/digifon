@@ -25,7 +25,7 @@ protected:
 
 private:
     cMessage* generateSchedulerMessage(int allocatedChannels);
-    void allocateChannels();
+    void reallocateChannels();
     int* readInitialWeights();
     void handleControlMessageEvent(cMessage *msg);
     void handleConnectionLostEvent(cMessage *msg);

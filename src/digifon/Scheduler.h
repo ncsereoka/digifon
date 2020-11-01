@@ -10,6 +10,8 @@ namespace digifon {
 class Scheduler: public cSimpleModule {
 private:
     cMessage *sendControlMessageEvent;
+    cMessage *unluckyUserLosesConnectionEvent;
+    cMessage *unluckyUserFindsConnectionEvent;
     int *allocatedChannels;
 
 public:
@@ -24,6 +26,9 @@ private:
     cMessage* generateSchedulerMessage(int allocatedChannels);
     bool isConnectionNormal();
     int* initializeAllocatedChannels();
+    void handleControlMessageEvent(cMessage *msg);
+    void handleConnectionLostEvent(cMessage *msg);
+    void handleConnectionFoundEvent(cMessage *msg);
 };
 
 }

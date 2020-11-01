@@ -7,35 +7,45 @@ Define_Module(Scheduler);
 
 Scheduler::Scheduler() {
     sendControlMessageEvent = nullptr;
+    unluckyUserLosesConnectionEvent = nullptr;
+    unluckyUserFindsConnectionEvent = nullptr;
     allocatedChannels = nullptr;
 }
 
 Scheduler::~Scheduler() {
     cancelAndDelete(sendControlMessageEvent);
+    cancelAndDelete(unluckyUserLosesConnectionEvent);
+    cancelAndDelete(unluckyUserFindsConnectionEvent);
     delete allocatedChannels;
 }
 
 void Scheduler::initialize() {
+    allocatedChannels = initializeAllocatedChannels();
+
     sendControlMessageEvent = new cMessage("SchedulerMessage");
     scheduleAt(simTime(), sendControlMessageEvent);
-    allocatedChannels = initializeAllocatedChannels();
+
+    unluckyUserLosesConnectionEvent = new cMessage(
+            "Unlucky user lost connection.");
+    scheduleAt(simTime() + par("connectionLostSec"),
+            unluckyUserLosesConnectionEvent);
+
+    unluckyUserFindsConnectionEvent = new cMessage(
+            "Unlucky user found connection.");
+    scheduleAt(simTime() + par("connectionFoundSec"),
+            unluckyUserFindsConnectionEvent);
 }
 
 void Scheduler::handleMessage(cMessage *msg) {
-    ASSERT(msg == sendControlMessageEvent);
-
-    for (cModule::GateIterator i(this); !i.end(); i++) {
-        cGate *gate = *i;
-        int gateIndex = gate->getIndex();
-        bool normalUser = gateIndex != par("unluckyUserId").intValue();
-
-        if (normalUser || isConnectionNormal()) {
-            send(generateSchedulerMessage(allocatedChannels[gateIndex]), gate);
-        }
+    if (msg == sendControlMessageEvent) {
+        handleControlMessageEvent(msg);
+    } else if (msg == unluckyUserLosesConnectionEvent) {
+        handleConnectionLostEvent(msg);
+    } else if (msg == unluckyUserFindsConnectionEvent) {
+        handleConnectionFoundEvent(msg);
+    } else {
+        throw cRuntimeError("Unknown message received");
     }
-
-    scheduleAt(simTime() + par("schedulingCycleDuration"),
-            sendControlMessageEvent);
 }
 
 cMessage* Scheduler::generateSchedulerMessage(int allocatedChannels) {
@@ -91,6 +101,31 @@ int* Scheduler::initializeAllocatedChannels() {
     }
 
     return channels;
+}
+
+void Scheduler::handleControlMessageEvent(cMessage *msg) {
+    for (cModule::GateIterator i(this); !i.end(); i++) {
+        cGate *gate = *i;
+        int gateIndex = gate->getIndex();
+        bool normalUser = gateIndex != par("unluckyUserId").intValue();
+
+        if (normalUser || isConnectionNormal()) {
+            send(generateSchedulerMessage(allocatedChannels[gateIndex]), gate);
+        }
+    }
+
+    scheduleAt(simTime() + par("schedulingCycleDuration"),
+            sendControlMessageEvent);
+}
+
+void Scheduler::handleConnectionLostEvent(cMessage *msg) {
+    int unluckyUserId = par("unluckyUserId").intValue();
+    EV << "USER#" << unluckyUserId << " lost connection!\n";
+}
+
+void Scheduler::handleConnectionFoundEvent(cMessage *msg) {
+    int unluckyUserId = par("unluckyUserId").intValue();
+    EV << "USER#" << unluckyUserId << " found connection!\n";
 }
 
 }

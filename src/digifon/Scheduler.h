@@ -28,6 +28,7 @@ private:
     void handleControlMessageEvent(cMessage *msg);
     void handleConnectionLostEvent(cMessage *msg);
     void handleConnectionFoundEvent(cMessage *msg);
+    void logCurrentChannels();
 };
 
 }

@@ -21,6 +21,7 @@ Scheduler::~Scheduler() {
 
 void Scheduler::initialize() {
     allocatedChannels = initializeAllocatedChannels();
+    logCurrentChannels();
 
     sendControlMessageEvent = new cMessage("SchedulerMessage");
     scheduleAt(simTime(), sendControlMessageEvent);
@@ -89,12 +90,6 @@ int* Scheduler::initializeAllocatedChannels() {
         diff += term;
     }
 
-    // Logging to see the count of allocated channels
-    for (int i = 0; i < userCount; i++) {
-        EV << "Currently allocated channels to USER#" << i << ": "
-                  << channels[i] << '\n';
-    }
-
     return channels;
 }
 
@@ -132,20 +127,20 @@ void Scheduler::handleConnectionLostEvent(cMessage *msg) {
         }
     }
 
-    // Logging to see the count of allocated channels
     EV << "USER#" << unluckyUserId << " lost connection!\n";
-    for (int i = 0; i < userCount; i++) {
-        EV << "Currently allocated channels to USER#" << i << ": "
-                  << allocatedChannels[i] << '\n';
-    }
+    logCurrentChannels();
 }
 
 void Scheduler::handleConnectionFoundEvent(cMessage *msg) {
     int unluckyUserId = par("unluckyUserId").intValue();
     int userCount = this->gateCount();
 
-    // Logging to see the count of allocated channels
     EV << "USER#" << unluckyUserId << " found connection!\n";
+    logCurrentChannels();
+}
+
+void Scheduler::logCurrentChannels() {
+    int userCount = this->gateCount();
     for (int i = 0; i < userCount; i++) {
         EV << "Currently allocated channels to USER#" << i << ": "
                   << allocatedChannels[i] << '\n';

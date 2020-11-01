@@ -19,7 +19,9 @@ void Queue::handleMessage(cMessage *msg) {
         arrival(msg);
         queue.insert(msg);
         msg->setTimestamp();
-        emit(queueLengthSignal, queue.getLength());
+        if (simTime().inUnit(SIMTIME_MS) % 10 == 0) {
+            emit(queueLengthSignal, queue.getLength());
+        }
     }
 }
 
@@ -32,7 +34,6 @@ void Queue::handleControlMessage(cMessage *controlMessage) {
 
     while (!queue.isEmpty() && allocatedChannels > 0) {
         cMessage *messageToBeSent = (cMessage*) queue.pop();
-        emit(queueLengthSignal, queue.getLength());
         departure(messageToBeSent);
         allocatedChannels--;
     }

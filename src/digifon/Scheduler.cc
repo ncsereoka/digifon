@@ -70,7 +70,8 @@ int* Scheduler::initializeAllocatedChannels() {
     // Allocate the initial channels
     int *channels = new int[userCount];
     int newWeightSum = 0;
-    int factor = par("radioChannelCount").intValue() / weightSum;
+    int radioChannelCount = par("radioChannelCount").intValue();
+    double factor = radioChannelCount / (double)weightSum;
     for (int i = 0; i < userCount; i++) {
         int newCount = initialWeights.at(i) * factor;
         if (newCount < 1) {
@@ -81,16 +82,11 @@ int* Scheduler::initializeAllocatedChannels() {
     }
 
     // Distribute any remaining channels
-    int diff = newWeightSum - weightSum;
-    if (diff < 0) {
-        channels[0] -= diff;
-    } else {
-        for (int i = 0; i < userCount; i++) {
-            if (channels[i] > diff) {
-                channels[i] -= diff;
-                break;
-            }
-        }
+    int diff = newWeightSum - radioChannelCount;
+    int term = diff < 0 ? 1 : -1;
+    for (int i = 0; i < userCount && diff != 0; i++) {
+        channels[i] += term;
+        diff += term;
     }
 
     // Logging to see the count of allocated channels
@@ -129,7 +125,7 @@ void Scheduler::handleConnectionLostEvent(cMessage *msg) {
     }
 
     // Allocate the bonus to the others
-    for (int i = 0; unluckyUserChannels > 0 && i < userCount; i++) {
+    for (int i = 0; i < userCount && unluckyUserChannels > 0; i++) {
         if (i != unluckyUserId) {
             allocatedChannels[i] += bonus;
             unluckyUserChannels -= bonus;
@@ -146,7 +142,14 @@ void Scheduler::handleConnectionLostEvent(cMessage *msg) {
 
 void Scheduler::handleConnectionFoundEvent(cMessage *msg) {
     int unluckyUserId = par("unluckyUserId").intValue();
+    int userCount = this->gateCount();
+
+    // Logging to see the count of allocated channels
     EV << "USER#" << unluckyUserId << " found connection!\n";
+    for (int i = 0; i < userCount; i++) {
+        EV << "Currently allocated channels to USER#" << i << ": "
+                  << allocatedChannels[i] << '\n';
+    }
 }
 
 }

@@ -26,3 +26,5 @@ Implement the simulation model using a non-adaptive scheduling algorithm (e.g. W
 
 1. Adapt the scheduling algorithm in order to allow the lagging user to reduce its lag. For example, you can increase its weight in the WRR algorithm.
 2. Compare the performance of the scheduling algorithm without adaptaion with the performance of the scheduling algorithm with.
+
+## [Go to analysis](https://github.com/ncsereoka/digifon/tree/master/analysis)

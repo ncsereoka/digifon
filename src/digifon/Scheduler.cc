@@ -9,6 +9,7 @@ Scheduler::Scheduler() {
     sendControlMessageEvent = nullptr;
     unluckyUserLosesConnectionEvent = nullptr;
     unluckyUserFindsConnectionEvent = nullptr;
+    userWeights = nullptr;
     allocatedChannels = nullptr;
 }
 
@@ -17,10 +18,13 @@ Scheduler::~Scheduler() {
     cancelAndDelete(unluckyUserLosesConnectionEvent);
     cancelAndDelete(unluckyUserFindsConnectionEvent);
     delete allocatedChannels;
+    delete userWeights;
 }
 
 void Scheduler::initialize() {
-    allocatedChannels = initializeAllocatedChannels();
+    userWeights = readInitialWeights();
+    allocatedChannels = new int[this->gateCount()];
+    allocateChannels();
     logCurrentChannels();
 
     sendControlMessageEvent = new cMessage("SchedulerMessage");
@@ -53,7 +57,7 @@ cMessage* Scheduler::generateSchedulerMessage(int allocatedChannels) {
     return schedulerMessage;
 }
 
-int* Scheduler::initializeAllocatedChannels() {
+int* Scheduler::readInitialWeights() {
     // Parse the initial weights
     std::vector<int> initialWeights = cStringTokenizer(
             par("initialWeights").stringValue()).asIntVector();
@@ -62,23 +66,30 @@ int* Scheduler::initializeAllocatedChannels() {
         throw cRuntimeError("Weights parameter count not equal to gate count.");
     }
 
-    int weightSum = 0;
-    for (std::vector<int>::iterator it = initialWeights.begin();
-            it != initialWeights.end(); ++it) {
-        weightSum += *it;
+    int *weights = new int[userCount];
+    for (int i = 0; i < userCount; i++) {
+        weights[i] = initialWeights.at(i);
+    }
+    return weights;
+}
+
+void Scheduler::allocateChannels() {
+    int userCount = this->gateCount();
+    int initialWeightSum = 0;
+    for (int i = 0; i < userCount; i++) {
+        initialWeightSum += userWeights[i];
     }
 
     // Allocate the initial channels
-    int *channels = new int[userCount];
     int newWeightSum = 0;
     int radioChannelCount = par("radioChannelCount").intValue();
-    double factor = radioChannelCount / (double)weightSum;
+    double factor = radioChannelCount / (double)initialWeightSum;
     for (int i = 0; i < userCount; i++) {
-        int newCount = initialWeights.at(i) * factor;
+        int newCount = userWeights[i] * factor;
         if (newCount < 1) {
             newCount = 1;
         }
-        channels[i] = newCount;
+        allocatedChannels[i] = newCount;
         newWeightSum += newCount;
     }
 
@@ -86,11 +97,9 @@ int* Scheduler::initializeAllocatedChannels() {
     int diff = newWeightSum - radioChannelCount;
     int term = diff < 0 ? 1 : -1;
     for (int i = 0; i < userCount && diff != 0; i++) {
-        channels[i] += term;
+        allocatedChannels[i] += term;
         diff += term;
     }
-
-    return channels;
 }
 
 void Scheduler::handleControlMessageEvent(cMessage *msg) {
@@ -134,6 +143,8 @@ void Scheduler::handleConnectionLostEvent(cMessage *msg) {
 void Scheduler::handleConnectionFoundEvent(cMessage *msg) {
     int unluckyUserId = par("unluckyUserId").intValue();
     int userCount = this->gateCount();
+    userWeights[unluckyUserId] = par("unluckyUserNewWeight").intValue();
+    allocateChannels();
 
     EV << "USER#" << unluckyUserId << " found connection!\n";
     logCurrentChannels();

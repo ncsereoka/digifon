@@ -12,6 +12,7 @@ private:
     cMessage *sendControlMessageEvent;
     cMessage *unluckyUserLosesConnectionEvent;
     cMessage *unluckyUserFindsConnectionEvent;
+    int *userWeights;
     int *allocatedChannels;
 
 public:
@@ -24,7 +25,8 @@ protected:
 
 private:
     cMessage* generateSchedulerMessage(int allocatedChannels);
-    int* initializeAllocatedChannels();
+    void allocateChannels();
+    int* readInitialWeights();
     void handleControlMessageEvent(cMessage *msg);
     void handleConnectionLostEvent(cMessage *msg);
     void handleConnectionFoundEvent(cMessage *msg);

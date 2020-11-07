@@ -7,7 +7,7 @@ class SchedulingAlgorithm {
 public:
     virtual ~SchedulingAlgorithm() {};
     virtual void reallocateChannels(int userCount, int *allocatedChannels,
-            int *weights, int channelCount) = 0;
+            int *weights, int *queryLengths, int channelCount) = 0;
 };
 
 }

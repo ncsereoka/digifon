@@ -15,6 +15,7 @@ private:
     cMessage *unluckyUserFindsConnectionEvent;
     int *userWeights;
     int *allocatedChannels;
+    int *userQueryLengths;
     SchedulingAlgorithm *algorithm;
     int radioChannelCount;
     int userCount;
@@ -36,6 +37,7 @@ private:
     void handleConnectionFoundEvent(cMessage *msg);
     void logCurrentChannels();
     SchedulingAlgorithm* selectAlgorithm();
+    void readUserQueryLengths();
 };
 
 }

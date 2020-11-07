@@ -1,8 +1,8 @@
-#include "DummySchedulingAlgorithm.h"
+#include "QueueAwareSchedulingAlgorithm.h"
 
 namespace digifon {
 
-void DummySchedulingAlgorithm::reallocateChannels(int userCount,
+void QueueAwareSchedulingAlgorithm::reallocateChannels(int userCount,
         int *allocatedChannels, int *weights, int *queryLengths,
         int channelCount) {
     int initialWeightSum = 0;

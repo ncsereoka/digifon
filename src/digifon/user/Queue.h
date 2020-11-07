@@ -8,6 +8,8 @@ using namespace omnetpp;
 namespace digifon {
 
 class Queue: public cSimpleModule {
+public:
+    int getLength();
 protected:
     cQueue queue;
     simsignal_t queueLengthSignal;

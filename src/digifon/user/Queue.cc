@@ -25,6 +25,10 @@ void Queue::handleMessage(cMessage *msg) {
     }
 }
 
+int Queue::getLength() {
+    return queue.getLength();
+}
+
 void Queue::handleControlMessage(cMessage *controlMessage) {
     int allocatedChannels =
             ((SchedulerMessage*) controlMessage)->getAllocatedChannels();

@@ -12,7 +12,10 @@ namespace digifon {
 class QueueAwareSchedulingAlgorithm: public SchedulingAlgorithm {
 public:
     virtual void reallocateChannels(int userCount, int *allocatedChannels,
-            int *weights, int* queryLengths, int channelCount);
+            int *weights, int *queryLengths, int channelCount);
+private:
+    void dummyAllocation(int userCount, int *allocatedChannels, int *weights,
+            int channelCount);
 };
 
 }

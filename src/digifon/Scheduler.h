@@ -2,6 +2,7 @@
 #define __SCHEDULER_H_
 
 #include <omnetpp.h>
+#include "algorithm/SchedulingAlgorithm.h"
 
 using namespace omnetpp;
 
@@ -14,6 +15,10 @@ private:
     cMessage *unluckyUserFindsConnectionEvent;
     int *userWeights;
     int *allocatedChannels;
+    SchedulingAlgorithm *algorithm;
+    int radioChannelCount;
+    int userCount;
+    int unluckyUserId;
 
 public:
     Scheduler();
@@ -25,12 +30,12 @@ protected:
 
 private:
     cMessage* generateSchedulerMessage(int allocatedChannels);
-    void reallocateChannels();
     int* readInitialWeights();
     void handleControlMessageEvent(cMessage *msg);
     void handleConnectionLostEvent(cMessage *msg);
     void handleConnectionFoundEvent(cMessage *msg);
     void logCurrentChannels();
+    SchedulingAlgorithm* selectAlgorithm();
 };
 
 }

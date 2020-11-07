@@ -5,6 +5,7 @@ simple Scheduler
     parameters:
         volatile double schedulingCycleDuration @unit(s);
         string initialWeights;
+        string algorithm;
         int radioChannelCount;
         int unluckyUserId;
         int unluckyUserNewWeight;

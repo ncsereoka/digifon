@@ -15,7 +15,7 @@ We'll explore several scheduling algorithms in this analysis. But first, let's s
 
 ## Scheduling algorithms
 
-### Dummy
+### **Dummy**
 
 Let's say that we have $N = 4$ users, our array of weights looks like this: $w = [1, 2, 3, 4]$ and we have $C = 30$ channels to distribute.
 $$
@@ -61,4 +61,40 @@ $w_0 = 1$, $w_1 = 2$, $w_2 = 3$, $w_3 = 9$
 
 Then, the allocated channels: $c_0 = 2$, $c_1 = 4$, $c_2 = 6$, $c_3 = 18$.
 
-### Queue Aware
+### **Queue Aware**
+
+The Queue Aware algorithm will also taken into account the length of each user's queue.
+
+At first, we do a naive Dummy allocation. We'll probably find a user which produced less messages then they are able to send. We keep count of such users and the remaining channels that they leave behind.
+
+Let's take the previous example:
+
+$w_0 = 1$, $w_1 = 2$, $w_2 = 3$, $w_3 = 4$, $C=30$ and
+
+$c_0 = 3$, $c_1 = 6$, $c_2 = 9$, $c_3 = 12$.
+
+Let's say that these are the query lengths:
+
+$q_0 = 9$, $q_1 = 6$, $q_2 = 10$, $q_3 = 2$.
+
+We can see that $user_0$ and $user_2$ exceed their allocated channels, $user_1$ hits just enough and $user_3$ produced much less.
+
+Allocate all those channels that can and should be allocated, that is:
+
+$c'_0 = 3$, $c'_1 = 6$, $c'_2 = 9$, $c'_3 = 2$.
+
+We are left with 10 more channels waiting to be allocated (the last user only consumed 2 out of its allocated 12).
+
+We'll do another dummy allocation, but keeping in mind those clients that have been fully served and reduce their weight to zero.
+
+$w'_0 = 1$, $w'_1 = 0$, $w'_2 = 3$, $w'_3 = 0$, $C'=10$ and then accordingly:
+
+$c''_0 = 2.5$, $c''_1 = 0$, $c''_2 = 7.5$, $c''_3 = 0$ or rather
+
+$c''_0 = 3$, $c''_1 = 0$, $c''_2 = 7$, $c''_3 = 0$
+
+So now, for the final allocations: $c_k$ = $c'_k$ + $c''_k$.
+
+$c_0 = 6$, $c_1 = 6$, $c_2 = 16$, $c_3 = 2$.
+
+We can continue this process until we get to an optimal resource allocation. This algorithm will do the optimization only once.

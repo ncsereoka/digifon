@@ -17,40 +17,40 @@ We'll explore several scheduling algorithms in this analysis. But first, let's s
 
 ### **Dummy**
 
-Let's say that we have $N = 4$ users, our array of weights looks like this: $w = [1, 2, 3, 4]$ and we have $C = 30$ channels to distribute.
-$$
-\sum w_i=1+2+3+4=10
-$$
-This means that for a weight of $1$, a user will receive $factor=1 \times \frac {30} {10}=3$ channels.
+Let's say that we have **N = 4** users, our array of weights looks like this: **w = [1, 2, 3, 4]** and we have **C = 30** channels to distribute.
 
-So, $user_0$ will receive $c_0 = w_0 \times factor = 3$, while the others will receive $c_1 = 6$, $c_2 = 9$, $c_3 = 12$.
+**sum(wi)** **= 1 + 2 + 3 + 4 = 10**
 
-The Dummy algorithm will allocate the above mentioned channels each scheduling cycle - even if $user_k$ did not generate $c_k$ messages. This can lead to channels which are not used - and users with a low weight might get several messages stuck in their queue.
+This means that for a weight of **1**, a user will receive **factor = 1 x (30/10) = 3** channels.
+
+So, **user0** will receive **c0 = w0 x factor = 3**, while the others will receive **c1 = 6**, **c2 = 9**, **c3 = 12**.
+
+The Dummy algorithm will allocate the above mentioned channels each scheduling cycle - even if **userk** did not generate **ck** messages. This can lead to channels which are not used - and users with a low weight might get several messages stuck in their queue.
 
 Let's take a very similar example.
-Say we have $N = 4$ users, an array of weights $w = [1, 2, 2, 3]$ and $C = 30$ channels to distribute.
-$$
-\sum w_i=1+2+2+3=8
-$$
-This means that for a weight of $1$, a user will receive $factor=1 \times \frac {30} {8}=3.75$ channels.
+Say we have **N = 4** users, an array of weights **w = [1, 2, 2, 3]** and **C = 30** channels to distribute.
 
-So, $user_0$ will receive $c_0 = w_0 \times factor = 3.75$, while the others will receive $c_1 = 7.5$, $c_2 = 7.5$, $c_3 = 11.25$.
+**sum(wi)** **= 1 + 2 + 2 + 3 = 8**
 
-These, should be integer values, of course, so we take the integer parts and keep the remaining difference $c=[3,7,7,11]$.
+This means that for a weight of **1**, a user will receive **factor = 1 x (30/8) = 3.75** channels.
 
-The remaining $30 - (3+7+7+11)=2$ channels are going to be distributed one by one, starting from the first user - we'll obtain $c=[4,8,7,11]$.
+So, **user0** will receive **c0 = w0 x factor = 3.75**, while the others will receive **c1 = 7.5**, **c2 = 7.5**, **c3 = 11.25**.
+
+These, should be integer values, of course, so we take the integer parts and keep the remaining difference **c = [3, 7, 7, 11]**.
+
+The remaining **30 - (3 + 7 + 7 + 11) = 2** channels are going to be distributed one by one, starting from the first user - we'll obtain **c = [4, 8, 7, 11]**.
 
 These values change only when the unlucky user loses their connection.
 
 Their weight gets set to zero, triggering a change in the channels allocated. Let's go back to our first example.
 
-$C=30$; $w=[1,2,3,4]$
+**C = 30**; **w = [1, 2, 3, 4]**
 
-If $user_3$ loses their connection, the weights become: $w=[1,2,3,0]$, the allocated channels: $c=[5,10,15,0]$.
+If **user3** loses their connection, the weights become: **w = [1, 2, 3, 0]**, the allocated channels: **c = [5, 10, 15, 0]**.
 
-Once the unlucky user comes back online with a changed weight e.g. $w_3 = 9$
+Once the unlucky user comes back online with a changed weight e.g. **w3 = 9**
 
-the weights become: $w=[1,2,3,9]$, then the allocated channels: $c=[2,4,6,18]$.
+the weights become: **w = [1, 2, 3, 9]**, then the allocated channels: **c = [2, 4, 6, 18]**.
 
 ### **Queue Aware**
 
@@ -58,22 +58,22 @@ The Queue Aware algorithm will also taken into account the length of each user's
 
 At first, we do a naive Dummy allocation. We'll probably find a user which produced less messages then they are able to send. We keep count of such users and the remaining channels that they leave behind.
 
-Let's take the previous example: $C=30$, $w=[1,2,3,4]$, $c=[3,6,9,12]$.
+Let's take the previous example: **C = 30**, **w = [1, 2, 3, 4]**, **c = [3, 6, 9, 12]**.
 
-Let's say that these are the query lengths: $q=[9,6,10,2]$.
+Let's say that these are the query lengths: **q = [9, 6, 10, 2]**.
 
-We can see that $user_0$ and $user_2$ exceed their allocated channels, $user_1$ hits just enough and $user_3$ produced much less.
+We can see that **user0** and **user2** exceed their allocated channels, **user1** hits just enough and **user3** produced much less.
 
-Allocate all those channels that can and should be allocated, that is $c'=[3,6,9,2]$.
+Allocate all those channels that can and should be allocated, that is **c' = [3, 6, 9, 2]**.
 
 We are left with 10 more channels waiting to be allocated (the last user only consumed 2 out of its allocated 12).
 
 We'll do another dummy allocation, but keeping in mind those clients that have been fully served and reduce their weight to zero.
 
-$C'=10$, $w'=[1,0,3,0]$, and then accordingly $c''=[2.5,0,7.5,0]$ or rather $c''=[3,0,7,0]$.
+**C' = 10**, **w' = [1, 0, 3, 0]**, and then accordingly **c'' = [2.5, 0, 7.5, 0]** or rather **c''= [3, 0, 7, 0]**.
 
-So now, for the final allocations - $c_k=c'_k + c''_k$:
+So now, for the final allocations - **ck = c'k + c''k**:
 
-$c=[6,6,16,2]$.
+**c = [6, 6, 16, 2]**.
 
 We can continue this process until we get to an optimal resource allocation. This algorithm will do the optimization only once.

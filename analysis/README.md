@@ -77,3 +77,5 @@ So now, for the final allocations - **ck = c'k + c''k**:
 **c = [6, 6, 16, 2]**.
 
 We can continue this process until we get to an optimal resource allocation. This algorithm will do the optimization only once.
+
+**Observation!** The problem with this algorithm is that it prioritizes the first users. In a scenario in which the channels which can be allocated is much lower than the amount of messages the users generate, the unfortunate users at the end of the user array will rarely get any allocated channels.

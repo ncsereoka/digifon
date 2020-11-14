@@ -1,16 +1,16 @@
-package digifon.simulations;
+package digifon.simulations.basic_scheduler;
 
 import digifon.user.User;
-import digifon.ControlUnit;
+import digifon.scheduler.BasicScheduler;
 import digifon.Sink;
 
-network RadioSystem
+network RadioSystemWithBasicScheduler
 {
     parameters:
         int userCount = default(3);
         @display("i=device/antennatower");
     submodules:
-        controlUnit: ControlUnit {
+        scheduler: BasicScheduler {
             parameters:
                 @display("p=50,50");
         }
@@ -24,7 +24,7 @@ network RadioSystem
         }
 	connections allowunconnected:
 	    for i=0..userCount-1 {
-	        controlUnit.out++ --> users[i].in;
+	        scheduler.out++ --> users[i].in;
             users[i].out --> sink.in++;
 	    }
 }

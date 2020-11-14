@@ -1,8 +1,27 @@
-#include "QueueAwareSchedulingAlgorithm.h"
+#include "BasicScheduler.h"
+
+#include <omnetpp.h>
+
+using namespace omnetpp;
 
 namespace digifon {
 
-void QueueAwareSchedulingAlgorithm::reallocateChannels(int userCount,
+Define_Module(BasicScheduler);
+
+void BasicScheduler::handleControlMessageEvent(cMessage *msg) {
+    readUserQueryLengths();
+    reallocateChannels(userCount, allocatedChannels, userWeights, userQueryLengths, radioChannelCount);
+    for (cModule::GateIterator i(this); !i.end(); i++) {
+        cGate *gate = *i;
+        int gateIndex = gate->getIndex();
+        send(generateSchedulerMessage(allocatedChannels[gateIndex]), gate);
+    }
+
+    scheduleAt(simTime() + par("schedulingCycleDuration"),
+            sendControlMessageEvent);
+}
+
+void BasicScheduler::reallocateChannels(int userCount,
         int *allocatedChannels, int *weights, int *queryLengths,
         int channelCount) {
     // First, do a dummy allocation, not taking into account query lengths.
@@ -35,14 +54,14 @@ void QueueAwareSchedulingAlgorithm::reallocateChannels(int userCount,
         for (int i = 0; i < userCount; i++) {
             allocatedChannels[i] += auxChannels[i];
         }
-        delete auxChannels;
+        delete[] auxChannels;
     }
 
-    delete auxWeights;
-    delete auxLengths;
+    delete[] auxWeights;
+    delete[] auxLengths;
 }
 
-void QueueAwareSchedulingAlgorithm::dummyAllocation(int userCount,
+void BasicScheduler::dummyAllocation(int userCount,
         int *allocatedChannels, int *weights, int channelCount) {
     int initialWeightSum = 0;
     for (int i = 0; i < userCount; i++) {

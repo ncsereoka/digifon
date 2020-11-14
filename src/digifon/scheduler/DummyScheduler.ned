@@ -1,11 +1,10 @@
-package digifon;
+package digifon.scheduler;
 
-simple ControlUnit
+simple DummyScheduler
 {
     parameters:
         volatile double schedulingCycleDuration @unit(s);
         string initialWeights;
-        string algorithm;
         int radioChannelCount;
         int unluckyUserId;
         int unluckyUserNewWeight;

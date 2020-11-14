@@ -1,6 +1,6 @@
 package digifon;
 
-simple Scheduler
+simple ControlUnit
 {
     parameters:
         volatile double schedulingCycleDuration @unit(s);

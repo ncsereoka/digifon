@@ -1,4 +1,5 @@
-#include "Scheduler.h"
+#include "ControlUnit.h"
+
 #include "Scheduler_Message_m.h"
 #include "algorithm/DummySchedulingAlgorithm.h"
 #include "algorithm/QueueAwareSchedulingAlgorithm.h"
@@ -6,9 +7,9 @@
 
 namespace digifon {
 
-Define_Module(Scheduler);
+Define_Module(ControlUnit);
 
-Scheduler::Scheduler() {
+ControlUnit::ControlUnit() {
     sendControlMessageEvent = nullptr;
     unluckyUserLosesConnectionEvent = nullptr;
     unluckyUserFindsConnectionEvent = nullptr;
@@ -18,7 +19,7 @@ Scheduler::Scheduler() {
     algorithm = nullptr;
 }
 
-Scheduler::~Scheduler() {
+ControlUnit::~ControlUnit() {
     cancelAndDelete(sendControlMessageEvent);
     cancelAndDelete(unluckyUserLosesConnectionEvent);
     cancelAndDelete(unluckyUserFindsConnectionEvent);
@@ -28,7 +29,7 @@ Scheduler::~Scheduler() {
     delete algorithm;
 }
 
-void Scheduler::initialize() {
+void ControlUnit::initialize() {
     userWeights = readInitialWeights();
     radioChannelCount = par("radioChannelCount").intValue();
     unluckyUserId = par("unluckyUserId").intValue();
@@ -50,7 +51,7 @@ void Scheduler::initialize() {
             unluckyUserFindsConnectionEvent);
 }
 
-void Scheduler::handleMessage(cMessage *msg) {
+void ControlUnit::handleMessage(cMessage *msg) {
     if (msg == sendControlMessageEvent) {
         handleControlMessageEvent(msg);
     } else if (msg == unluckyUserLosesConnectionEvent) {
@@ -62,13 +63,13 @@ void Scheduler::handleMessage(cMessage *msg) {
     }
 }
 
-cMessage* Scheduler::generateSchedulerMessage(int allocatedChannels) {
+cMessage* ControlUnit::generateSchedulerMessage(int allocatedChannels) {
     SchedulerMessage *schedulerMessage = new SchedulerMessage("controlMessage");
     schedulerMessage->setAllocatedChannels(allocatedChannels);
     return schedulerMessage;
 }
 
-int* Scheduler::readInitialWeights() {
+int* ControlUnit::readInitialWeights() {
     // Parse the initial weights
     std::vector<int> initialWeights = cStringTokenizer(
             par("initialWeights").stringValue()).asIntVector();
@@ -84,7 +85,7 @@ int* Scheduler::readInitialWeights() {
     return weights;
 }
 
-void Scheduler::handleControlMessageEvent(cMessage *msg) {
+void ControlUnit::handleControlMessageEvent(cMessage *msg) {
     readUserQueryLengths();
     algorithm->reallocateChannels(userCount, allocatedChannels, userWeights, userQueryLengths,
             radioChannelCount);
@@ -98,17 +99,17 @@ void Scheduler::handleControlMessageEvent(cMessage *msg) {
             sendControlMessageEvent);
 }
 
-void Scheduler::handleConnectionLostEvent(cMessage *msg) {
+void ControlUnit::handleConnectionLostEvent(cMessage *msg) {
     userWeights[unluckyUserId] = 0;
     EV << "USER#" << unluckyUserId << " found connection!\n";
 }
 
-void Scheduler::handleConnectionFoundEvent(cMessage *msg) {
+void ControlUnit::handleConnectionFoundEvent(cMessage *msg) {
     userWeights[unluckyUserId] = par("unluckyUserNewWeight").intValue();
     EV << "USER#" << unluckyUserId << " found connection!\n";
 }
 
-void Scheduler::logCurrentChannels() {
+void ControlUnit::logCurrentChannels() {
     int userCount = this->gateCount();
     for (int i = 0; i < userCount; i++) {
         EV << "Currently allocated channels to USER#" << i << ": "
@@ -116,7 +117,7 @@ void Scheduler::logCurrentChannels() {
     }
 }
 
-SchedulingAlgorithm* Scheduler::selectAlgorithm() {
+SchedulingAlgorithm* ControlUnit::selectAlgorithm() {
     const char* param = par("algorithm").stringValue();
     if (!strcmp(param, "queue")) {
         return new QueueAwareSchedulingAlgorithm();
@@ -125,7 +126,7 @@ SchedulingAlgorithm* Scheduler::selectAlgorithm() {
     }
 }
 
-void Scheduler::readUserQueryLengths() {
+void ControlUnit::readUserQueryLengths() {
     for (cModule::GateIterator i(this); !i.end(); i++) {
         cGate *gate = *i;
         int userIndex = gate->getIndex();

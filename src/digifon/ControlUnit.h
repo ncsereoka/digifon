@@ -1,5 +1,5 @@
-#ifndef __SCHEDULER_H_
-#define __SCHEDULER_H_
+#ifndef __CONTROLUNIT_H_
+#define __CONTROLUNIT_H_
 
 #include <omnetpp.h>
 #include "algorithm/SchedulingAlgorithm.h"
@@ -8,7 +8,7 @@ using namespace omnetpp;
 
 namespace digifon {
 
-class Scheduler: public cSimpleModule {
+class ControlUnit: public cSimpleModule {
 private:
     cMessage *sendControlMessageEvent;
     cMessage *unluckyUserLosesConnectionEvent;
@@ -22,8 +22,8 @@ private:
     int unluckyUserId;
 
 public:
-    Scheduler();
-    virtual ~Scheduler();
+    ControlUnit();
+    virtual ~ControlUnit();
 
 protected:
     virtual void initialize();

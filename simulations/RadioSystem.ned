@@ -1,7 +1,7 @@
 package digifon.simulations;
 
 import digifon.user.User;
-import digifon.Scheduler;
+import digifon.ControlUnit;
 import digifon.Sink;
 
 network RadioSystem
@@ -10,7 +10,7 @@ network RadioSystem
         int userCount = default(3);
         @display("i=device/antennatower");
     submodules:
-        scheduler: Scheduler {
+        controlUnit: ControlUnit {
             parameters:
                 @display("p=50,50");
         }
@@ -24,7 +24,7 @@ network RadioSystem
         }
 	connections allowunconnected:
 	    for i=0..userCount-1 {
-	        scheduler.out++ --> users[i].in;
+	        controlUnit.out++ --> users[i].in;
             users[i].out --> sink.in++;
 	    }
 }

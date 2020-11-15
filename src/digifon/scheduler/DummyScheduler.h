@@ -7,9 +7,10 @@ namespace digifon {
 
 class DummyScheduler: public AbstractScheduler {
 private:
-    virtual void handleControlMessageEvent(cMessage *msg);
-    void reallocateChannels(int userCount, int *allocatedChannels, int *weights,
-            int *queryLengths, int channelCount);
+    virtual void schedule();
+protected:
+    void dummyAllocation(int userCount, int *allocatedChannels, int *weights,
+            int channelCount);
 };
 
 }

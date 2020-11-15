@@ -1,16 +1,16 @@
-package digifon.simulations.basic_scheduler;
+package digifon.simulations.improved_dummy_scheduler;
 
 import digifon.user.User;
-import digifon.scheduler.BasicScheduler;
+import digifon.scheduler.ImprovedDummyScheduler;
 import digifon.Sink;
 
-network RadioSystemWithBasicScheduler
+network RadioSystemWithImprovedDummyScheduler
 {
     parameters:
         int userCount = default(3);
         @display("i=device/antennatower");
     submodules:
-        scheduler: BasicScheduler {
+        scheduler: ImprovedDummyScheduler {
             parameters:
                 @display("p=50,50");
         }

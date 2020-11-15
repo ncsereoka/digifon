@@ -1,6 +1,6 @@
 package digifon.scheduler;
 
-simple BasicScheduler
+simple ImprovedDummyScheduler
 {
     parameters:
         volatile double schedulingCycleDuration @unit(s);

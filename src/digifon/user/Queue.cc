@@ -14,7 +14,7 @@ void Queue::initialize() {
 
 void Queue::handleMessage(cMessage *msg) {
     if (!strcmp(msg->getName(), "controlMessage")) {
-        handleControlMessage(msg);
+        handleSchedulerMessage(msg);
     } else {
         arrival(msg);
         queue.insert(msg);
@@ -29,12 +29,12 @@ int Queue::getLength() {
     return queue.getLength();
 }
 
-void Queue::handleControlMessage(cMessage *controlMessage) {
+void Queue::handleSchedulerMessage(cMessage *schedulerMessage) {
     int allocatedChannels =
-            ((SchedulerMessage*) controlMessage)->getAllocatedChannels();
+            ((SchedulerMessage*) schedulerMessage)->getAllocatedChannels();
     EV << "[QUEUE#" << this->getParentModule()->getIndex() << "] Received "
               << allocatedChannels << " allocated channel(s) from scheduler\n";
-    delete controlMessage;
+    delete schedulerMessage;
 
     while (!queue.isEmpty() && allocatedChannels > 0) {
         cMessage *messageToBeSent = (cMessage*) queue.pop();

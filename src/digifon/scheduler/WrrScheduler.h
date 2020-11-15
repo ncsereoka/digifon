@@ -7,7 +7,14 @@ namespace digifon {
 
 class WrrScheduler: public AbstractScheduler {
 private:
-    virtual void handleControlMessageEvent(cMessage *msg);
+    int userToServe;
+
+protected:
+    virtual void initialize();
+
+private:
+    virtual void schedule();
+    void sendMessageToServedUser(int channelsToAllocate);
 };
 
 }

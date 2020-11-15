@@ -21,7 +21,7 @@ protected:
     virtual void departure(cMessage *msg);
 
 private:
-    virtual void handleControlMessage(cMessage *controlMessage);
+    virtual void handleSchedulerMessage(cMessage *schedulerMessage);
 };
 
 }

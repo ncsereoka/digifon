@@ -9,7 +9,7 @@ namespace digifon {
 
 class AbstractScheduler: public cSimpleModule {
 protected:
-    cMessage *sendControlMessageEvent;
+    cMessage *schedulingEvent;
     cMessage *unluckyUserLosesConnectionEvent;
     cMessage *unluckyUserFindsConnectionEvent;
     int *userWeights;
@@ -26,15 +26,18 @@ public:
 protected:
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
-    virtual void handleControlMessageEvent(cMessage *msg) = 0;
+    virtual void schedule() = 0;
     void readUserQueryLengths();
     void logCurrentChannels();
     cMessage* generateSchedulerMessage(int allocatedChannels);
+    int getQueryLengthByUserIndex(int userIndex);
+    cGate *getUserGateByIndex(int userIndex);
 
 private:
     int* readInitialWeights();
-    void handleConnectionLostEvent(cMessage *msg);
-    void handleConnectionFoundEvent(cMessage *msg);
+    void handleSchedulingEvent();
+    void handleConnectionLostEvent();
+    void handleConnectionFoundEvent();
 };
 
 }

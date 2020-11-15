@@ -6,7 +6,7 @@
 namespace digifon {
 
 AbstractScheduler::AbstractScheduler() {
-    sendControlMessageEvent = nullptr;
+    schedulingEvent = nullptr;
     unluckyUserLosesConnectionEvent = nullptr;
     unluckyUserFindsConnectionEvent = nullptr;
     userWeights = nullptr;
@@ -15,7 +15,7 @@ AbstractScheduler::AbstractScheduler() {
 }
 
 AbstractScheduler::~AbstractScheduler() {
-    cancelAndDelete(sendControlMessageEvent);
+    cancelAndDelete(schedulingEvent);
     cancelAndDelete(unluckyUserLosesConnectionEvent);
     cancelAndDelete(unluckyUserFindsConnectionEvent);
     delete allocatedChannels;
@@ -32,8 +32,8 @@ void AbstractScheduler::initialize() {
     userQueryLengths = new int[userCount];
     logCurrentChannels();
 
-    sendControlMessageEvent = new cMessage("SchedulerMessage");
-    scheduleAt(simTime(), sendControlMessageEvent);
+    schedulingEvent = new cMessage("SchedulerMessage");
+    scheduleAt(simTime(), schedulingEvent);
 
     unluckyUserLosesConnectionEvent = new cMessage("ConnectionLostEvent");
     scheduleAt(simTime() + par("connectionLostSec"),
@@ -45,12 +45,12 @@ void AbstractScheduler::initialize() {
 }
 
 void AbstractScheduler::handleMessage(cMessage *msg) {
-    if (msg == sendControlMessageEvent) {
-        handleControlMessageEvent(msg);
+    if (msg == schedulingEvent) {
+        handleSchedulingEvent();
     } else if (msg == unluckyUserLosesConnectionEvent) {
-        handleConnectionLostEvent(msg);
+        handleConnectionLostEvent();
     } else if (msg == unluckyUserFindsConnectionEvent) {
-        handleConnectionFoundEvent(msg);
+        handleConnectionFoundEvent();
     } else {
         throw cRuntimeError("Unknown message received");
     }
@@ -78,12 +78,17 @@ int* AbstractScheduler::readInitialWeights() {
     return weights;
 }
 
-void AbstractScheduler::handleConnectionLostEvent(cMessage *msg) {
+void AbstractScheduler::handleSchedulingEvent() {
+    schedule();
+    scheduleAt(simTime() + par("schedulingCycleDuration"), schedulingEvent);
+}
+
+void AbstractScheduler::handleConnectionLostEvent() {
     userWeights[unluckyUserId] = 0;
     EV << "USER#" << unluckyUserId << " found connection!\n";
 }
 
-void AbstractScheduler::handleConnectionFoundEvent(cMessage *msg) {
+void AbstractScheduler::handleConnectionFoundEvent() {
     userWeights[unluckyUserId] = par("unluckyUserNewWeight").intValue();
     EV << "USER#" << unluckyUserId << " found connection!\n";
 }
@@ -105,6 +110,19 @@ void AbstractScheduler::readUserQueryLengths() {
                 userModule->getModuleByPath(".queue"));
         userQueryLengths[userIndex] = userQueue->getLength();
     }
+}
+
+int AbstractScheduler::getQueryLengthByUserIndex(int userIndex) {
+    cModule *userModule =
+            getUserGateByIndex(userIndex)->getNextGate()->getOwnerModule();
+    Queue *userQueue = check_and_cast<Queue*>(
+            userModule->getModuleByPath(".queue"));
+    return userQueue->getLength();
+}
+
+cGate* AbstractScheduler::getUserGateByIndex(int userIndex) {
+    int baseId = gateBaseId("out");
+    return gate(baseId + userIndex);
 }
 
 }

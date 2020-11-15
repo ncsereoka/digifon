@@ -13,8 +13,7 @@ protected:
     virtual void initialize();
 
 private:
-    virtual void schedule();
-    void sendMessageToServedUser(int channelsToAllocate);
+    virtual void scheduleAllocableChannels();
 };
 
 }

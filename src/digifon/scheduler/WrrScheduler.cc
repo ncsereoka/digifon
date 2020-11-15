@@ -9,46 +9,43 @@ void WrrScheduler::initialize() {
     userToServe = 0;
 }
 
-void WrrScheduler::schedule() {
-    int channelsToAllocate = radioChannelCount;
-    bool finished = false;
+void WrrScheduler::scheduleAllocableChannels() {
     bool emptyCycle = false;
-    while (!finished && channelsToAllocate > 0) {
-        const int userQueryLength = getQueryLengthByUserIndex(userToServe);
+
+    int channelsLeft = radioChannelCount;
+    while (channelsLeft > 0) {
         const int channelsRequiredByCurrentUser = std::min(
-                userWeights[userToServe], userQueryLength);
+                userWeights[userToServe], userQueryLengths[userToServe]);
 
-        if (channelsRequiredByCurrentUser > channelsToAllocate) {
-            sendMessageToServedUser(channelsToAllocate);
-            channelsToAllocate = 0;
+        if (channelsRequiredByCurrentUser > channelsLeft) {
+            allocatedChannels[userToServe] += channelsLeft;
+            channelsLeft = 0;
         } else {
-            sendMessageToServedUser(channelsRequiredByCurrentUser);
-            channelsToAllocate -= channelsRequiredByCurrentUser;
+            allocatedChannels[userToServe] += channelsRequiredByCurrentUser;
+            channelsLeft -= channelsRequiredByCurrentUser;
+            userQueryLengths[userToServe] -= channelsRequiredByCurrentUser;
 
+            // Mechanism to make sure we don't enter an infinite loop.
+            // Checks whether we made a full cycle without allocating a single channel.
+            if (channelsRequiredByCurrentUser == 0) {
+                if (userToServe == 0) {
+                    if (emptyCycle) {
+                        return;
+                    } else {
+                        emptyCycle = true;
+                    }
+                }
+            } else {
+                emptyCycle = false;
+            }
+
+            // Go to the next user.
             userToServe++;
             if (userToServe == userCount) {
                 userToServe = 0;
             }
         }
-
-        // mechanism to make sure we don't enter an infinite loop
-        if (channelsRequiredByCurrentUser == 0) {
-            if (userToServe == 0) {
-                if (emptyCycle) {
-                    finished = true;
-                } else {
-                    emptyCycle = true;
-                }
-            }
-        } else {
-            emptyCycle = false;
-        }
     }
-}
-
-void WrrScheduler::sendMessageToServedUser(int channelsToAllocate) {
-    cGate *userGate = getUserGateByIndex(userToServe);
-    send(generateSchedulerMessage(channelsToAllocate), userGate);
 }
 
 }

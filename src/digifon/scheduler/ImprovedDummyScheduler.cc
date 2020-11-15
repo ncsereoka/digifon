@@ -8,14 +8,9 @@ namespace digifon {
 
 Define_Module(ImprovedDummyScheduler);
 
-void ImprovedDummyScheduler::schedule() {
-    readUserQueryLengths();
-    reallocateChannels(userCount, allocatedChannels, userWeights, userQueryLengths, radioChannelCount);
-    for (cModule::GateIterator i(this); !i.end(); i++) {
-        cGate *gate = *i;
-        int gateIndex = gate->getIndex();
-        send(generateSchedulerMessage(allocatedChannels[gateIndex]), gate);
-    }
+void ImprovedDummyScheduler::scheduleAllocableChannels() {
+    reallocateChannels(userCount, allocatedChannels, userWeights,
+            userQueryLengths, radioChannelCount);
 }
 
 void ImprovedDummyScheduler::reallocateChannels(int userCount,

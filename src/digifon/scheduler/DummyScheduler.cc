@@ -4,15 +4,9 @@ namespace digifon {
 
 Define_Module(DummyScheduler);
 
-void DummyScheduler::schedule() {
-    readUserQueryLengths();
+void DummyScheduler::scheduleAllocableChannels() {
     dummyAllocation(userCount, allocatedChannels, userWeights,
             radioChannelCount);
-    for (cModule::GateIterator i(this); !i.end(); i++) {
-        cGate *gate = *i;
-        int gateIndex = gate->getIndex();
-        send(generateSchedulerMessage(allocatedChannels[gateIndex]), gate);
-    }
 }
 
 void DummyScheduler::dummyAllocation(int userCount, int *allocatedChannels,

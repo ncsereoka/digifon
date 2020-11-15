@@ -7,7 +7,9 @@ import digifon.Sink;
 network RadioSystemWithWrrScheduler
 {
     parameters:
-        int userCount = default(3);
+        int userCount = default(4);
+        int radioChannelCount = default(30);
+        double networkLoad = default(0.4);
         @display("i=device/antennatower");
     submodules:
         scheduler: WrrScheduler {

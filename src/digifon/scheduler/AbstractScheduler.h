@@ -26,12 +26,14 @@ public:
 protected:
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
-    virtual void schedule() = 0;
+    virtual void scheduleAllocableChannels() = 0;
     void readUserQueryLengths();
     void logCurrentChannels();
     cMessage* generateSchedulerMessage(int allocatedChannels);
     int getQueryLengthByUserIndex(int userIndex);
     cGate *getUserGateByIndex(int userIndex);
+    void resetAllocatedChannels();
+    void sendAllocatedChannels();
 
 private:
     int* readInitialWeights();

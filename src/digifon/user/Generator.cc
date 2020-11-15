@@ -17,6 +17,12 @@ Generator::~Generator() {
 void Generator::initialize() {
     sendMessageEvent = new cMessage("sendMessageEvent");
     scheduleAt(simTime(), sendMessageEvent);
+
+    cModule *radioSystem = getParentModule()->getParentModule();
+    double networkLoad = radioSystem->par("networkLoad").doubleValue();
+    int userCount = radioSystem->par("userCount").intValue();
+    int radioChannelCount = radioSystem->par("radioChannelCount").intValue();
+    intervalScaler = userCount / (radioChannelCount * networkLoad);
 }
 
 void Generator::handleMessage(cMessage *msg) {
@@ -25,7 +31,10 @@ void Generator::handleMessage(cMessage *msg) {
     cMessage *newData = new cMessage("data");
     send(newData, "out");
 
-    scheduleAt(simTime() + par("messageCreationInterval"), sendMessageEvent);
+    simtime_t restTime = par("messageCreationInterval").doubleValue();
+    restTime *= intervalScaler;
+
+    scheduleAt(simTime() + restTime, sendMessageEvent);
 }
 
 }

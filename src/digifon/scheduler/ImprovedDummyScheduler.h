@@ -7,7 +7,7 @@ namespace digifon {
 
 class ImprovedDummyScheduler: public DummyScheduler {
 private:
-    virtual void schedule();
+    virtual void scheduleAllocableChannels();
     void reallocateChannels(int userCount, int *allocatedChannels, int *weights,
             int *queryLengths, int channelCount);
 };

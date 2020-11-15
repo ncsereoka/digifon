@@ -8,6 +8,11 @@ Define_Module(Queue);
 void Queue::initialize() {
     queue.setName("queue");
 
+    logDensityModulo = 1/par("userQueueLengthLogDensity").doubleValue();
+    if (logDensityModulo <= 0) {
+        throw cRuntimeError("Invalid log density.");
+    }
+
     queueLengthSignal = registerSignal("queueLength");
     emit(queueLengthSignal, queue.getLength());
 }
@@ -19,7 +24,7 @@ void Queue::handleMessage(cMessage *msg) {
         arrival(msg);
         queue.insert(msg);
         msg->setTimestamp();
-        if (simTime().inUnit(SIMTIME_MS) % 10 == 0) {
+        if (simTime().inUnit(SIMTIME_MS) % logDensityModulo == 0) {
             emit(queueLengthSignal, queue.getLength());
         }
     }

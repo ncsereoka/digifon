@@ -10,6 +10,7 @@ namespace digifon {
 class Generator: public cSimpleModule {
 private:
     cMessage *sendMessageEvent;
+    double intervalScaler;
 
 public:
     Generator();

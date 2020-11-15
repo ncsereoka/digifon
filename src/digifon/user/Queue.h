@@ -8,6 +8,8 @@ using namespace omnetpp;
 namespace digifon {
 
 class Queue: public cSimpleModule {
+private:
+    int logDensityModulo;
 public:
     int getLength();
 protected:

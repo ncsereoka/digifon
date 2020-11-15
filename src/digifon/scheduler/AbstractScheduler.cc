@@ -25,9 +25,9 @@ AbstractScheduler::~AbstractScheduler() {
 
 void AbstractScheduler::initialize() {
     userWeights = readInitialWeights();
-    radioChannelCount = par("radioChannelCount").intValue();
+    radioChannelCount = getParentModule()->par("radioChannelCount").intValue();
     unluckyUserId = par("unluckyUserId").intValue();
-    userCount = this->gateCount();
+    userCount = getParentModule()->par("userCount").intValue();
     allocatedChannels = new int[userCount];
     userQueryLengths = new int[userCount];
     logCurrentChannels();
@@ -79,7 +79,10 @@ int* AbstractScheduler::readInitialWeights() {
 }
 
 void AbstractScheduler::handleSchedulingEvent() {
-    schedule();
+    readUserQueryLengths();
+    resetAllocatedChannels();
+    scheduleAllocableChannels();
+    sendAllocatedChannels();
     scheduleAt(simTime() + par("schedulingCycleDuration"), schedulingEvent);
 }
 
@@ -123,6 +126,22 @@ int AbstractScheduler::getQueryLengthByUserIndex(int userIndex) {
 cGate* AbstractScheduler::getUserGateByIndex(int userIndex) {
     int baseId = gateBaseId("out");
     return gate(baseId + userIndex);
+}
+
+void AbstractScheduler::resetAllocatedChannels() {
+    for (int i = 0; i < userCount; i++) {
+        allocatedChannels[i] = 0;
+    }
+}
+
+void AbstractScheduler::sendAllocatedChannels() {
+    for (cModule::GateIterator i(this); !i.end(); i++) {
+        cGate *gate = *i;
+        int gateIndex = gate->getIndex();
+        send(generateSchedulerMessage(allocatedChannels[gateIndex]), gate);
+        EV << "Allocated " << allocatedChannels[gateIndex]
+                  << " channels to USER#" << gateIndex << '\n';
+    }
 }
 
 }

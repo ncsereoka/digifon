@@ -27,6 +27,7 @@ void AbstractScheduler::initialize() {
     userWeights = readInitialWeights();
     radioChannelCount = getParentModule()->par("radioChannelCount").intValue();
     unluckyUserId = par("unluckyUserId").intValue();
+    unluckyUserInitialWeight = userWeights[unluckyUserId];
     userCount = getParentModule()->par("userCount").intValue();
     allocatedChannels = new int[userCount];
     userQueryLengths = new int[userCount];
@@ -92,7 +93,14 @@ void AbstractScheduler::handleConnectionLostEvent() {
 }
 
 void AbstractScheduler::handleConnectionFoundEvent() {
-    userWeights[unluckyUserId] = par("unluckyUserNewWeight").intValue();
+    bool modifyWeight = par("modifyUnluckyUserWeight").boolValue();
+
+    // Modify to the new weight or set back the initial one.
+    userWeights[unluckyUserId] =
+            modifyWeight ?
+                    par("unluckyUserNewWeight").intValue() :
+                    unluckyUserInitialWeight;
+
     EV << "USER#" << unluckyUserId << " found connection!\n";
 }
 

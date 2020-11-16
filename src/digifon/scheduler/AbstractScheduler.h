@@ -18,6 +18,7 @@ protected:
     int radioChannelCount;
     int userCount;
     int unluckyUserId;
+    int unluckyUserInitialWeight;
 
 public:
     AbstractScheduler();

@@ -10,8 +10,9 @@ AbstractScheduler::AbstractScheduler() {
     unluckyUserLosesConnectionEvent = nullptr;
     unluckyUserFindsConnectionEvent = nullptr;
     userWeights = nullptr;
-    userQueryLengths = nullptr;
+    userQueueLengths = nullptr;
     allocatedChannels = nullptr;
+    userQueues = nullptr;
 }
 
 AbstractScheduler::~AbstractScheduler() {
@@ -20,7 +21,8 @@ AbstractScheduler::~AbstractScheduler() {
     cancelAndDelete(unluckyUserFindsConnectionEvent);
     delete allocatedChannels;
     delete userWeights;
-    delete userQueryLengths;
+    delete userQueueLengths;
+    delete userQueues;
 }
 
 void AbstractScheduler::initialize() {
@@ -30,7 +32,8 @@ void AbstractScheduler::initialize() {
     unluckyUserInitialWeight = userWeights[unluckyUserId];
     userCount = getParentModule()->par("userCount").intValue();
     allocatedChannels = new int[userCount];
-    userQueryLengths = new int[userCount];
+    userQueueLengths = new int[userCount];
+    userQueues = readUserQueues();
     logCurrentChannels();
 
     schedulingEvent = new cMessage("SchedulerMessage");
@@ -80,7 +83,7 @@ int* AbstractScheduler::readInitialWeights() {
 }
 
 void AbstractScheduler::handleSchedulingEvent() {
-    readUserQueryLengths();
+    readUserQueueLengths();
     resetAllocatedChannels();
     scheduleAllocableChannels();
     sendAllocatedChannels();
@@ -112,23 +115,31 @@ void AbstractScheduler::logCurrentChannels() {
     }
 }
 
-void AbstractScheduler::readUserQueryLengths() {
+void AbstractScheduler::readUserQueueLengths() {
     for (cModule::GateIterator i(this); !i.end(); i++) {
         cGate *gate = *i;
         int userIndex = gate->getIndex();
         cModule *userModule = gate->getNextGate()->getOwnerModule();
         Queue *userQueue = check_and_cast<Queue*>(
                 userModule->getModuleByPath(".queue"));
-        userQueryLengths[userIndex] = userQueue->getLength();
+        userQueueLengths[userIndex] = userQueue->getLength();
     }
 }
 
-int AbstractScheduler::getQueryLengthByUserIndex(int userIndex) {
+int AbstractScheduler::getQueueLengthByUserIndex(int userIndex) {
     cModule *userModule =
             getUserGateByIndex(userIndex)->getNextGate()->getOwnerModule();
     Queue *userQueue = check_and_cast<Queue*>(
             userModule->getModuleByPath(".queue"));
     return userQueue->getLength();
+}
+
+cMessage* AbstractScheduler::getUserQueueFrontbyIndex(int userIndex) {
+    cModule *userModule =
+            getUserGateByIndex(userIndex)->getNextGate()->getOwnerModule();
+    Queue *userQueue = check_and_cast<Queue*>(
+            userModule->getModuleByPath(".queue"));
+    return userQueue->getFront();
 }
 
 cGate* AbstractScheduler::getUserGateByIndex(int userIndex) {
@@ -150,6 +161,18 @@ void AbstractScheduler::sendAllocatedChannels() {
         EV << "Allocated " << allocatedChannels[gateIndex]
                   << " channels to USER#" << gateIndex << '\n';
     }
+}
+
+Queue** AbstractScheduler::readUserQueues() {
+    Queue **userQueues = new Queue*[userCount];
+    for (int i = 0; i < userCount; i++) {
+        cModule *userModule =
+                getUserGateByIndex(i)->getNextGate()->getOwnerModule();
+        userQueues[i] = check_and_cast<Queue*>(
+                userModule->getModuleByPath(".queue"));
+    }
+
+    return userQueues;
 }
 
 }

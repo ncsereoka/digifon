@@ -34,6 +34,10 @@ int Queue::getLength() {
     return queue.getLength();
 }
 
+cMessage *Queue::getFront() {
+    return (cMessage*)queue.front();
+}
+
 void Queue::handleSchedulerMessage(cMessage *schedulerMessage) {
     int allocatedChannels =
             ((SchedulerMessage*) schedulerMessage)->getAllocatedChannels();

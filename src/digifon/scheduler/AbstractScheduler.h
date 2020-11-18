@@ -2,6 +2,7 @@
 #define __ABSTRACT_SCHEDULER_H_
 
 #include <omnetpp.h>
+#include "../user/Queue.h"
 
 using namespace omnetpp;
 
@@ -14,11 +15,12 @@ protected:
     cMessage *unluckyUserFindsConnectionEvent;
     int *userWeights;
     int *allocatedChannels;
-    int *userQueryLengths;
+    int *userQueueLengths;
     int radioChannelCount;
     int userCount;
     int unluckyUserId;
     int unluckyUserInitialWeight;
+    Queue **userQueues;
 
 public:
     AbstractScheduler();
@@ -28,19 +30,21 @@ protected:
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
     virtual void scheduleAllocableChannels() = 0;
-    void readUserQueryLengths();
+    void readUserQueueLengths();
     void logCurrentChannels();
     cMessage* generateSchedulerMessage(int allocatedChannels);
-    int getQueryLengthByUserIndex(int userIndex);
+    int getQueueLengthByUserIndex(int userIndex);
+    cMessage* getUserQueueFrontbyIndex(int userIndex);
     cGate *getUserGateByIndex(int userIndex);
     void resetAllocatedChannels();
     void sendAllocatedChannels();
+    virtual void handleSchedulingEvent();
 
 private:
     int* readInitialWeights();
-    void handleSchedulingEvent();
     void handleConnectionLostEvent();
     void handleConnectionFoundEvent();
+    Queue **readUserQueues();
 };
 
 }

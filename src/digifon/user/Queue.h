@@ -12,6 +12,7 @@ private:
     int logDensityModulo;
 public:
     int getLength();
+    cMessage* getFront();
 protected:
     cQueue queue;
     simsignal_t queueLengthSignal;

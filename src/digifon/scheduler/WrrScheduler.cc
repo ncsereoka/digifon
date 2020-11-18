@@ -15,7 +15,7 @@ void WrrScheduler::scheduleAllocableChannels() {
     int channelsLeft = radioChannelCount;
     while (channelsLeft > 0) {
         const int channelsRequiredByCurrentUser = std::min(
-                userWeights[userToServe], userQueryLengths[userToServe]);
+                userWeights[userToServe], userQueueLengths[userToServe]);
 
         if (channelsRequiredByCurrentUser > channelsLeft) {
             allocatedChannels[userToServe] += channelsLeft;
@@ -23,7 +23,7 @@ void WrrScheduler::scheduleAllocableChannels() {
         } else {
             allocatedChannels[userToServe] += channelsRequiredByCurrentUser;
             channelsLeft -= channelsRequiredByCurrentUser;
-            userQueryLengths[userToServe] -= channelsRequiredByCurrentUser;
+            userQueueLengths[userToServe] -= channelsRequiredByCurrentUser;
 
             // Mechanism to make sure we don't enter an infinite loop.
             // Checks whether we made a full cycle without allocating a single channel.

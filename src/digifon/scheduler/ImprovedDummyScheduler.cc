@@ -10,7 +10,7 @@ Define_Module(ImprovedDummyScheduler);
 
 void ImprovedDummyScheduler::scheduleAllocableChannels() {
     reallocateChannels(userCount, allocatedChannels, userWeights,
-            userQueryLengths, radioChannelCount);
+            userQueueLengths, radioChannelCount);
 }
 
 void ImprovedDummyScheduler::reallocateChannels(int userCount,

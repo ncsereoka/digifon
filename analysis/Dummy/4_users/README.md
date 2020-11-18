@@ -1,15 +1,8 @@
-# Analysis for eight users
+# Analysis for four users
 
 ## Queue length
 
-![Queue length using Dummy](./EightUsersDummy.svg)
+![Queue length using Dummy](./FourUsersDummy.svg)
+![Queue length using Queue Aware](./FourUsersQueueAware.svg)
 
-We can clearly see the problems that come with constant allocation and not taking into account user query lengths when using the Dummy algorithm.
-
-![Queue length using Queue Aware](./EightUsersQueueAware.svg)
-
-The Query Aware algorithm shows much better results. We can see that when the unlucky user reconnects - 0.8s - and is assigned a much greater weight, some of the other users get left behind.
-
-This continues until the unlucky user gets 'up-to-date' - after the 1s mark. At the same time, we can also see the formation of a top for the other users.
-
-After this, we see a normalization in which the lengths of the queries return to the values from before the time the unlucky user's disconnect.
+Due to the number of channels available and the packet generation interval, we don't see a clear advantage of the Query Aware algorithm in this case.

@@ -10,4 +10,4 @@ In comparison to the Weighted Round-Robin, this algorithm not only affects all t
 
 When the user reconnects, we can see the sudden prioritisation of their messages - due to them being stale sitting in the queue.
 
-Their messages are going to be prioritised until we get to that point of balance where the two lines meet: the users' messages will be prioritised 'evenly', like at the beginning. 
+Their messages are going to be prioritised until we get to that point of balance where the two lines meet: the users' messages will be prioritised 'evenly', like at the beginning.

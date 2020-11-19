@@ -43,7 +43,7 @@ At first, we do a naive Dummy allocation. We'll probably find a user which produ
 
 Let's take the previous example: **C = 30**, **w = [1, 2, 3, 4]**, **c = [3, 6, 9, 12]**.
 
-Let's say that these are the query lengths: **q = [9, 6, 10, 2]**.
+Let's say that these are the queue lengths: **q = [9, 6, 10, 2]**.
 
 We can see that **user0** and **user2** exceed their allocated channels, **user1** hits just enough and **user3** produced much less.
 

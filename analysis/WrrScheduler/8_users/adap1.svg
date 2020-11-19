@@ -6956,7 +6956,7 @@
             <rect x="38" y="39" clip-path="url(#clipPath2)" fill="none" width="792" stroke-dasharray="none" height="466" stroke="black"/>
         </g>
         <g text-rendering="geometricPrecision" font-size="13" stroke-linecap="butt">
-            <text xml:space="preserve" x="354" y="10" clip-path="url(#clipPath2)" stroke="none">User query length over time</text>
+            <text xml:space="preserve" x="354" y="10" clip-path="url(#clipPath2)" stroke="none">User queue length over time</text>
             <line clip-path="url(#clipPath2)" fill="none" x1="38" x2="830" y1="37" y2="37"/>
             <line clip-path="url(#clipPath2)" fill="none" x1="38" x2="830" y1="507" y2="507"/>
             <text xml:space="preserve" x="407" y="539" clip-path="url(#clipPath2)" stroke="none">Time (ms)</text>

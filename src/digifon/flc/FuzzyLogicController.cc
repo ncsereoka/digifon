@@ -296,12 +296,13 @@ void FuzzyLogicController::handleMessage(cMessage *msg) {
         int currentDelay = unluckyUserQueueLength;
 
         // Fetch the current weight of the unlucky user.
-        int W_HP = (int) getParentModule()->getSubmodule("scheduler")->par(
-                "unluckyUserNewWeight");
+//        int W_HP = (int) getParentModule()->getSubmodule("scheduler")->par(
+//                "unluckyUserNewWeight");
+        int W_HP = 0;
         EV << "Unlucky user weight: " << W_HP << "\n";
 
-        // The B value can remain the default.
-        int B = 31;
+        // The B value should be the calculated with respect to the channel count.
+        int B = (int) getParentModule()->par("radioChannelCount");
 
         int new_W_HP = W_HP;
         int diff = wantedDelay - currentDelay;

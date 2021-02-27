@@ -13,6 +13,7 @@ AbstractScheduler::AbstractScheduler() {
     userQueueLengths = nullptr;
     allocatedChannels = nullptr;
     userQueues = nullptr;
+    allowUnluckyUserWeightChange = false;
 }
 
 AbstractScheduler::~AbstractScheduler() {
@@ -83,6 +84,10 @@ int* AbstractScheduler::readInitialWeights() {
 }
 
 void AbstractScheduler::handleSchedulingEvent() {
+    if (allowUnluckyUserWeightChange) {
+        userWeights[unluckyUserId] = par("unluckyUserNewWeight").intValue();
+    }
+
     readUserQueueLengths();
     resetAllocatedChannels();
     scheduleAllocableChannels();
@@ -98,7 +103,9 @@ void AbstractScheduler::handleConnectionLostEvent() {
 void AbstractScheduler::handleConnectionFoundEvent() {
     bool modifyWeight = par("modifyUnluckyUserWeight").boolValue();
 
-    // Modify to the new weight or set back the initial one.
+    allowUnluckyUserWeightChange = true;
+
+// Modify to the new weight or set back the initial one.
     userWeights[unluckyUserId] =
             modifyWeight ?
                     par("unluckyUserNewWeight").intValue() :

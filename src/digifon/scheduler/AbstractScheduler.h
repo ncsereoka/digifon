@@ -21,6 +21,7 @@ protected:
     int unluckyUserId;
     int unluckyUserInitialWeight;
     Queue **userQueues;
+    bool allowUnluckyUserWeightChange;
 
 public:
     AbstractScheduler();

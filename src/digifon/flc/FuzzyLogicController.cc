@@ -4,6 +4,7 @@
 #include <set>
 #include <string>
 #include <iostream>
+#include "../user/Queue.h"
 using namespace std;
 using namespace omnetpp;
 
@@ -271,12 +272,36 @@ int FuzzyLogicController::fuzzy_inference(int *inp, int nb_inp, int delta) {
 
 void FuzzyLogicController::handleMessage(cMessage *msg) {
     if (!strcmp(msg->getName(), "start_flc")) {
-
         EV << "Calculez nou HP" << endl;
-        int wantedDelay = 10; //(int)getParentModule()->par("delayLimit");
-        int currentDelay = 15; //round((double)getParentModule()->getSubmodule("netwrk")->par("meanDelayHP"));
-        int W_HP = 4; //(int)getParentModule()->getSubmodule("hp_fifo")->par("weight");
-        int B = 31; //(int)getParentModule()->getSubmodule("netwrk")->par("B");
+
+        // We want to reduce the lag to zero.
+        int wantedDelay = 0;
+
+        // Calculate the unlucky user's lag
+        const int unluckyUserIndex = (int) getParentModule()->getSubmodule(
+                "scheduler")->par("unluckyUserId");
+        EV << "Unlucky user: " << unluckyUserIndex << "\n";
+
+        const int baseId =
+                getParentModule()->getSubmodule("scheduler")->gateBaseId("out");
+        cModule *unluckyUserModule =
+                getParentModule()->getSubmodule("scheduler")->gate(
+                        baseId + unluckyUserIndex)->getNextGate()->getOwnerModule();
+        Queue *unluckyUserQueue = check_and_cast<Queue*>(
+                unluckyUserModule->getModuleByPath(".queue"));
+        const int unluckyUserQueueLength = unluckyUserQueue->getLength();
+        EV << "Unlucky user lag: " << unluckyUserQueueLength << "\n";
+
+        // The unlucky user's lag will be equal to the number of packets in their queue.
+        int currentDelay = unluckyUserQueueLength;
+
+        // Fetch the current weight of the unlucky user.
+        int W_HP = (int) getParentModule()->getSubmodule("scheduler")->par(
+                "unluckyUserNewWeight");
+        EV << "Unlucky user weight: " << W_HP << "\n";
+
+        // The B value can remain the default.
+        int B = 31;
 
         int new_W_HP = W_HP;
         int diff = wantedDelay - currentDelay;
@@ -306,15 +331,13 @@ void FuzzyLogicController::handleMessage(cMessage *msg) {
         if (new_W_HP < 1)
             new_W_HP = 1;
 
-        /* not for test
-         cPar& W_HP_r = getParentModule()->getSubmodule("hp_fifo")->par("weight");
-         W_HP_r.setIntValue(new_W_HP);
-         */
+        // Set the computed value as the new weight of the unlucky user.
+        getParentModule()->getSubmodule("scheduler")->par(
+                "unluckyUserNewWeight").setIntValue(new_W_HP);
         EV << "Pondere noua: " << new_W_HP << "\n\n";
 
         qtimew.record(new_W_HP);
-        //cMessage *job = new cMessage("clear");
-        //sendDirect(job, getParentModule()->getSubmodule("netwrk")->gate("in"));
+
         delete msg;
     }
 }

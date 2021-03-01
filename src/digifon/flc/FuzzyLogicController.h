@@ -33,6 +33,7 @@ private:
     Matrix* fuzzify(int crisp_in, int delta);
     int defuzify(Matrix *mat);
     double scale(double n, double m, double a, double b, double x);
+    int unluckyUserQueryLength();
 };
 
 }

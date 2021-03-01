@@ -7,7 +7,6 @@ namespace digifon {
 Define_Module(FuzzyLogicGenerator);
 
 void FuzzyLogicGenerator::initialize() {
-    flc_time = 0.1;
     simtime_t startTime = (simtime_t) getParentModule()->getSubmodule(
             "scheduler")->par("connectionFoundSec");
     sendMessageEvent = new cMessage("sendMessageEvent");
@@ -19,6 +18,6 @@ void FuzzyLogicGenerator::handleMessage(cMessage *msg) {
     EV << " START FLC\n";
 
     send(new cMessage("start_flc"), "out");
-    scheduleAt(simTime() + flc_time, sendMessageEvent);
+    scheduleAt(simTime() + par("flcTime"), sendMessageEvent);
 }
 }

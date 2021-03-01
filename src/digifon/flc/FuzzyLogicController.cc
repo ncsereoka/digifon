@@ -274,47 +274,35 @@ void FuzzyLogicController::handleMessage(cMessage *msg) {
     if (!strcmp(msg->getName(), "start_flc")) {
         EV << "Calculez nou HP" << endl;
 
-        // We want to reduce the lag to zero.
-        int wantedDelay = 0;
+        // We want to reduce the lag to an acceptable amount.
+        int wantedDelay = par("wantedDelay").intValue(); // or wantedLag
 
-        // Calculate the unlucky user's lag
-        const int unluckyUserIndex = (int) getParentModule()->getSubmodule(
-                "scheduler")->par("unluckyUserId");
-        EV << "Unlucky user: " << unluckyUserIndex << "\n";
-
-        const int baseId =
-                getParentModule()->getSubmodule("scheduler")->gateBaseId("out");
-        cModule *unluckyUserModule =
-                getParentModule()->getSubmodule("scheduler")->gate(
-                        baseId + unluckyUserIndex)->getNextGate()->getOwnerModule();
-        Queue *unluckyUserQueue = check_and_cast<Queue*>(
-                unluckyUserModule->getModuleByPath(".queue"));
-        const int unluckyUserQueueLength = unluckyUserQueue->getLength();
+        // The current lag is the number of packets the unlucky user has in the queue.
+        const int unluckyUserQueueLength = this->unluckyUserQueryLength();
         EV << "Unlucky user lag: " << unluckyUserQueueLength << "\n";
-
-        // The unlucky user's lag will be equal to the number of packets in their queue.
-        int currentDelay = unluckyUserQueueLength;
+        int currentDelay = unluckyUserQueueLength; // or currentLag
 
         // Fetch the current weight of the unlucky user.
-//        int W_HP = (int) getParentModule()->getSubmodule("scheduler")->par(
-//                "unluckyUserNewWeight");
-        int W_HP = 0;
-        EV << "Unlucky user weight: " << W_HP << "\n";
+        int W_HP = (int) getParentModule()->getSubmodule("scheduler")->par(
+                "unluckyUserNewWeight");
+        EV << "Ponderea existenta: " << W_HP << "\n";
 
         // The B value should be the calculated with respect to the channel count.
         int B = (int) getParentModule()->par("radioChannelCount");
 
+        // Save the current weight because the result of the fuzzy inference will be added to it.
         int new_W_HP = W_HP;
         int diff = wantedDelay - currentDelay;
 
         qtime.record(currentDelay);
         EV << " Dif nescalat = " << diff << "\n";
 
+        // Scale the difference and the weight.
         diff = scale(0, 62, -10, 10, diff);
         W_HP = scale(0, 62, 0, B, W_HP);
         EV << " Dif scalat = " << diff << "\n";
 
-        int delta = 0; //(int) getParentModule()->par("delta");
+        int delta = 0;
         int inp[2] = { diff, W_HP };
 
         int result = fuzzy_inference(inp, 2, delta);
@@ -325,8 +313,10 @@ void FuzzyLogicController::handleMessage(cMessage *msg) {
 
         res_dep.record(res);
 
+        // Add the calculated inference.
         new_W_HP = new_W_HP + res;
 
+        // Make sure the new weight is between the limits.
         if (new_W_HP > B)
             new_W_HP = B - 1;
         if (new_W_HP < 1)
@@ -341,6 +331,21 @@ void FuzzyLogicController::handleMessage(cMessage *msg) {
 
         delete msg;
     }
+}
+
+int FuzzyLogicController::unluckyUserQueryLength() {
+    const int unluckyUserIndex = (int) getParentModule()->getSubmodule(
+            "scheduler")->par("unluckyUserId");
+    EV << "Unlucky user: " << unluckyUserIndex << "\n";
+
+    const int baseId =
+            getParentModule()->getSubmodule("scheduler")->gateBaseId("out");
+    cModule *unluckyUserModule =
+            getParentModule()->getSubmodule("scheduler")->gate(
+                    baseId + unluckyUserIndex)->getNextGate()->getOwnerModule();
+    Queue *unluckyUserQueue = check_and_cast<Queue*>(
+            unluckyUserModule->getModuleByPath(".queue"));
+    return unluckyUserQueue->getLength();
 }
 
 }
